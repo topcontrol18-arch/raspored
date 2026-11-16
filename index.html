@@ -1,0 +1,2704 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moj raspored časova</title>
+<meta name="theme-color" content="#27463A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Raspored">
+<link rel="apple-touch-icon" href="ikona-192.png">
+<link rel="icon" type="image/png" href="ikona-192.png">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  /* papir i kreda */
+  --papir:#F1F3EE; --list:#FFFFFF;
+  --ink:#1B2420; --ink-2:#4A5A52; --ink-3:#7F8D86; --ink-4:#AEB9B2;
+  --linija:#D7DDD6; --linija-2:#E9ECE7;
+  /* tabla */
+  --tabla:#27463A; --tabla-2:#1D3730; --kreda:#EDF2EC; --kreda-2:#A8C0B2;
+  /* stanja */
+  --cas:#2F6B52; --cas-bg:#E3EEE7; --cas-ivica:#BBD4C4;
+  --odmor:#A9601A; --odmor-bg:#F8EBDA; --odmor-ivica:#E6CBA4;
+  --stop:#99392C; --stop-bg:#F5E4E0; --stop-ivica:#DFBAB2;
+  --na-akcentu:#FFFFFF;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="svijetla"]){
+    --papir:#11150F; --list:#1A201A;
+    --ink:#E8EDE6; --ink-2:#B3C0B5; --ink-3:#86948A; --ink-4:#5E6B62;
+    --linija:#2C352D; --linija-2:#232B24;
+    --tabla:#1B2F28; --tabla-2:#15231E; --kreda:#E6EFE7; --kreda-2:#93AE9F;
+    --cas:#7CBE9A; --cas-bg:#1C2E25; --cas-ivica:#2F4A3B;
+    --odmor:#D59C53; --odmor-bg:#2E2517; --odmor-ivica:#4E3D22;
+    --stop:#DF8C7C; --stop-bg:#30201C; --stop-ivica:#4E322B;
+    --na-akcentu:#0F1511;
+  }
+}
+:root[data-theme="tamna"]{
+  --papir:#11150F; --list:#1A201A;
+  --ink:#E8EDE6; --ink-2:#B3C0B5; --ink-3:#86948A; --ink-4:#5E6B62;
+  --linija:#2C352D; --linija-2:#232B24;
+  --tabla:#1B2F28; --tabla-2:#15231E; --kreda:#E6EFE7; --kreda-2:#93AE9F;
+  --cas:#7CBE9A; --cas-bg:#1C2E25; --cas-ivica:#2F4A3B;
+  --odmor:#D59C53; --odmor-bg:#2E2517; --odmor-ivica:#4E3D22;
+  --stop:#DF8C7C; --stop-bg:#30201C; --stop-ivica:#4E322B;
+  --na-akcentu:#0F1511;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--papir);color:var(--ink);font-family:var(--sans);
+  font-size:15.5px;line-height:1.5;-webkit-text-size-adjust:100%}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 56px}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--cas);outline-offset:2px}
+
+/* ---------- zaglavlje ---------- */
+header{background:var(--tabla);color:var(--kreda);padding:14px 0 13px;
+  border-bottom:3px solid var(--tabla-2)}
+header .wrap{padding-bottom:0;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:18px;font-weight:650;letter-spacing:-.015em;flex:1 1 auto}
+h1 span{display:block;font-size:12.5px;font-weight:450;color:var(--kreda-2);margin-top:5px;letter-spacing:0;line-height:1.7}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+.tools .btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22);color:var(--kreda)}
+.tools .btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.4)}
+.tools .btn.on{background:var(--kreda);border-color:var(--kreda);color:var(--tabla)}
+
+.btn{border:1px solid var(--linija);background:var(--list);border-radius:var(--r);
+  padding:7px 11px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+.btn:hover{border-color:var(--ink-3)}
+.btn.on{background:var(--cas);border-color:var(--cas);color:var(--na-akcentu)}
+
+/* ---------- tanki redovi umjesto ploče ---------- */
+#zivo:not(:empty){margin-top:16px;display:grid;gap:8px}
+.traka-red{background:var(--list);border:1px solid var(--linija);border-left:3px solid var(--ink-4);
+  border-radius:var(--r);padding:10px 13px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.traka-red b{color:var(--ink);font-weight:650}
+.traka-red.gradivo{border-left-color:var(--cas)}
+.traka-red .btn{padding:3px 9px;font-size:12px;margin-left:4px}
+.traka-red .oz{margin-left:2px}
+.traka-red.zadaci{border-left-color:var(--odmor);background:var(--odmor-bg);color:var(--odmor)}
+.traka-red.zadaci b{color:var(--odmor)}
+.traka-red.smjena{border-left-color:var(--cas);background:var(--cas-bg);color:var(--cas)}
+.traka-red.smjena b{color:var(--cas)}
+.pocetak{background:var(--list);border:1px solid var(--linija);border-radius:10px;padding:18px 16px}
+.pocetak h2{margin:0 0 6px;font-size:19px;font-weight:650;letter-spacing:-.02em}
+.pocetak p{margin:0 0 14px;font-size:13.5px;color:var(--ink-3);line-height:1.5}
+
+/* ---------- tabla (živi panel) ---------- */
+.zivo{margin-top:18px;background:var(--tabla);color:var(--kreda);border-radius:10px;
+  overflow:hidden;border:1px solid var(--tabla-2);box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+.zsat{display:flex;align-items:center;gap:10px;padding:10px 16px;
+  border-bottom:1px solid rgba(255,255,255,.12);font-family:var(--mono);
+  font-size:13px;color:var(--kreda-2)}
+.zsat b{font-size:14px;font-weight:500;color:var(--kreda);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.zsat i{font-style:normal;margin-left:auto;font-family:var(--sans);font-size:12.5px}
+.smjena-dugme{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.3);background:transparent;border-radius:999px;
+  padding:1px 9px;font:inherit;font-size:12px;font-weight:600;color:var(--kreda-2);cursor:pointer;
+  vertical-align:baseline}
+.smjena-dugme span{color:var(--kreda);margin-left:2px}
+.smjena-dugme:hover{border-color:var(--kreda);color:var(--kreda)}
+
+.ztelo{padding:13px 16px 8px}
+.zstanje{font-size:12px;font-weight:600;color:var(--kreda-2);margin-bottom:3px}
+.zivo.cas .zstanje{color:#9FD9B8}
+.zivo.odmor .zstanje{color:#EBBE7E}
+.zivo.neradan .zstanje{color:#EAA698}
+.zime{font-size:23px;font-weight:650;letter-spacing:-.02em;line-height:1.1;color:#fff;display:inline-block;vertical-align:baseline}
+.zime-dugme{display:block;background:none;border:0;padding:0;font-family:inherit;text-align:left;
+  cursor:pointer;border-bottom:2px dotted rgba(255,255,255,.3)}
+.zime-dugme:hover{border-bottom-color:rgba(255,255,255,.8)}
+.zvrijeme{font-family:var(--mono);font-size:12.5px;color:var(--kreda-2);margin-top:4px}
+.zbroj{display:inline-flex;align-items:baseline;gap:7px;margin:0 0 0 12px}
+.zbroj em{font-style:normal;font-size:13px;color:var(--kreda-2)}
+.zbroj strong{font-family:var(--mono);font-size:23px;font-weight:500;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;line-height:1.1;color:#fff}
+.traka{height:3px;background:rgba(255,255,255,.16);overflow:hidden;margin-top:10px}
+.traka div{height:100%;width:0;background:#9FD9B8;transition:width .9s linear}
+.zivo.odmor .traka div{background:#EBBE7E}
+@media(prefers-reduced-motion:reduce){.traka div{transition:none}}
+
+.zzatim{padding:11px 16px 13px;font-size:13.5px;color:var(--kreda-2);
+  border-top:1px solid rgba(255,255,255,.1);margin-top:12px}
+.zzatim b{color:#fff;font-weight:600}
+.zzatim .btn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:var(--kreda)}
+.zzatim .oz{background:rgba(255,255,255,.12);color:var(--kreda)}
+.cipovi{display:flex;gap:6px;padding:0 16px 15px;flex-wrap:wrap}
+.cip{border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:3px 10px;
+  font-size:12px;font-weight:600;color:var(--kreda-2);background:transparent;cursor:pointer}
+.cip.gotov{opacity:.42;text-decoration:line-through}
+.cip.sad{background:var(--kreda);border-color:var(--kreda);color:var(--tabla)}
+.cip u{text-decoration:none;color:#EBBE7E}
+
+/* ---------- dani: vremenska traka ---------- */
+.mob{display:block;margin-top:22px}
+@media(min-width:721px){.mob{display:none}}
+.dcard{background:transparent;border:0;border-top:1px solid var(--linija);padding-top:12px;margin-top:16px}
+.dcard:first-child{margin-top:0}
+.dcard.dnes{border-top:2px solid var(--cas)}
+.dcard.stop{opacity:.55}
+.dhead{display:flex;align-items:baseline;gap:10px;padding:0 0 8px}
+.dhead b{font-size:15.5px;font-weight:650;letter-spacing:-.01em}
+.dcard.dnes .dhead b{color:var(--cas)}
+.dhead span{font-size:12.5px;color:var(--ink-3);margin-left:auto;font-family:var(--mono)}
+.prepis{border:0;background:none;color:var(--cas);font:inherit;font-size:12.5px;font-weight:650;
+  cursor:pointer;padding:0 0 0 12px;flex:none}
+.dcard ol{margin:0;padding:0;list-style:none}
+.dcard li{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  padding:8px 8px 8px 0;border-top:1px solid var(--linija-2);cursor:pointer;
+  border-left:2px solid transparent;padding-left:8px;margin-left:-10px}
+.dcard li:first-child{border-top:0}
+.dcard li i{order:1;flex:0 0 46px;text-align:right;font-family:var(--mono);font-style:normal;
+  font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.dcard li em{order:2;flex:0 0 16px;font-family:var(--mono);font-style:normal;font-size:11.5px;color:var(--ink-4)}
+.dcard li b{order:3;font-size:15.5px;font-weight:600;letter-spacing:-.01em}
+.dcard li.sada{background:var(--cas-bg);border-left-color:var(--cas);border-radius:0 var(--r) var(--r) 0}
+.dcard li.sada b,.dcard li.sada i{color:var(--cas)}
+.dcard li.pauza{cursor:default;color:var(--ink-3);padding-top:6px;padding-bottom:6px}
+.dcard li.pauza b{font-size:13.5px;font-weight:500;color:var(--ink-3);font-style:italic}
+.dcard li.pauza i{color:var(--ink-4);font-size:12px}
+.pauza-tr{order:3;margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-4)}
+.dcard li.pauza.sada{background:var(--odmor-bg);border-left-color:var(--odmor)}
+.dcard li.pauza.sada b,.dcard li.pauza.sada i,.dcard li.pauza.sada .ostalo{color:var(--odmor)}
+.dcard .nis{padding:4px 0 8px;color:var(--ink-4);font-size:14px}
+.ostalo{order:3;margin-left:auto;font-family:var(--mono);font-size:15px;font-weight:600;
+  color:var(--cas);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.jed{order:4;flex:1 1 100%;margin-left:72px;font-size:12.5px;color:var(--ink-2);line-height:1.35}
+.tacka{color:var(--odmor)}
+
+.dantabs{display:flex;gap:6px;overflow-x:auto;padding:0 0 4px;margin:0 -16px 4px;
+  padding-left:16px;padding-right:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.dantabs::-webkit-scrollbar{display:none}
+.dantabs button{flex:0 0 auto;border:1px solid var(--linija);background:var(--list);border-radius:999px;
+  padding:7px 13px;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink-2);cursor:pointer;
+  display:flex;align-items:baseline;gap:6px}
+.dantabs button.danas{border-color:var(--cas-ivica)}
+.dantabs button .mali{font-family:var(--mono);font-size:11px;color:var(--ink-4);font-weight:500}
+.dantabs button[aria-selected=true]{background:var(--cas);border-color:var(--cas);color:var(--na-akcentu)}
+.dantabs button[aria-selected=true] .mali{color:var(--na-akcentu);opacity:.75}
+
+/* ---------- tabela (širi ekran) ---------- */
+.grid{margin-top:22px;background:var(--list);border:1px solid var(--linija);border-radius:8px;overflow:hidden}
+@media(max-width:720px){.grid{display:none}}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th,td{padding:0;text-align:left}
+thead th:first-child{width:36px;padding:0}
+thead th{background:transparent;border-bottom:2px solid var(--linija);padding:11px 10px 9px;vertical-align:top}
+thead th .dan{font-size:14px;font-weight:650;letter-spacing:-.01em}
+thead th .sm{font-size:11.5px;font-weight:500;color:var(--ink-3);margin-top:2px;font-family:var(--mono)}
+thead th.dnes .dan{color:var(--cas)}
+thead th.dnes{box-shadow:inset 0 3px 0 var(--cas)}
+tbody th{width:36px;text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--ink-4);
+  font-weight:500;border-right:1px solid var(--linija-2);border-top:1px solid var(--linija-2)}
+tbody td{border-top:1px solid var(--linija-2);border-right:1px solid var(--linija-2);padding:6px 8px;vertical-align:top}
+tbody td:last-child{border-right:0}
+.cell{min-height:36px}
+.cell.pun{background:var(--cas-bg);border-radius:var(--r);padding:6px 8px;margin:-2px;cursor:pointer}
+.cell .ime{font-size:14px;font-weight:650;color:var(--cas)}
+.cell .vr{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:2px}
+.cell.prazno{opacity:.55}
+.cell.prazno .vr{color:var(--ink-4)}
+.cell.sada{background:var(--cas)}
+.cell.sada .ime{color:var(--na-akcentu)}
+.cell.sada .vr,.cell.sada .jed{color:var(--na-akcentu);opacity:.78}
+.cell .jed{font-size:11px;color:var(--ink-2);margin-top:4px;padding-top:4px;
+  border-top:1px solid var(--cas-ivica);line-height:1.3;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+td.dnes{background:rgba(47,107,82,.04)}
+td.stop .cell.pun{background:var(--stop-bg)}
+td.stop .cell .ime{color:var(--stop)}
+
+/* ---------- uređivanje rasporeda ---------- */
+body.uredjuje .grid,body.uredjuje .mob,body.uredjuje .zbir,body.uredjuje details{display:none}
+.ured2{margin-top:18px;background:var(--list);border:1px solid var(--linija);border-radius:10px;overflow:hidden}
+.dtabs{display:flex;gap:0;border-bottom:1px solid var(--linija)}
+.dtabs button{flex:1 1 0;border:0;border-right:1px solid var(--linija-2);background:transparent;
+  padding:10px 2px;font-size:13.5px;font-weight:600;color:var(--ink-3);cursor:pointer}
+.dtabs button:last-child{border-right:0}
+.dtabs button[aria-selected=true]{background:var(--cas-bg);color:var(--cas);box-shadow:inset 0 -3px 0 var(--cas)}
+.dtabs button .mali{display:block;font-size:11px;font-weight:500;opacity:.8;font-family:var(--mono)}
+.smred{display:flex;gap:6px;padding:13px 13px 0;flex-wrap:wrap}
+.smred button{flex:1 1 auto;border:1px solid var(--linija);background:var(--list);border-radius:var(--r);
+  padding:7px 6px;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.smred button[aria-selected=true]{background:var(--cas);border-color:var(--cas);color:var(--na-akcentu)}
+.credovi{padding:14px 13px 4px;display:grid;gap:8px}
+.cred{display:flex;align-items:center;gap:10px}
+.cred .brv{font-family:var(--mono);font-size:11.5px;color:var(--ink-4);flex:0 0 72px;line-height:1.3;text-align:right}
+.cred .brv b{display:block;font-size:12.5px;font-weight:500;color:var(--ink-2)}
+.cred input{flex:1 1 auto;min-width:0;border:1px solid var(--linija);border-radius:var(--r);
+  padding:11px 10px;font:inherit;font-size:15.5px;font-weight:600;background:var(--list);color:var(--ink)}
+.cred input:focus{outline:2px solid var(--cas);outline-offset:1px;border-color:var(--cas)}
+.cred .obrisi{border:1px solid var(--linija);background:var(--list);border-radius:var(--r);
+  width:38px;height:40px;font-size:16px;color:var(--ink-3);cursor:pointer;flex:none}
+.cred .obrisi:hover{color:var(--stop);border-color:var(--stop)}
+.brzi{display:flex;gap:6px;flex-wrap:wrap;padding:4px 13px 0}
+.brzi button{border:1px dashed var(--cas-ivica);background:var(--cas-bg);color:var(--cas);
+  border-radius:999px;padding:5px 11px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.udno{display:flex;gap:8px;align-items:center;padding:14px 13px;flex-wrap:wrap;border-top:1px solid var(--linija-2);margin-top:10px}
+.udno .upom{margin:0;flex:1 1 100%}
+
+/* ---------- odjeljenje: bilješke, učenici, gradivo ---------- */
+.bilj{margin-top:14px;background:var(--list);border:1px solid var(--linija);border-left:3px solid var(--cas);
+  border-radius:8px;overflow:hidden}
+.bhead{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--linija-2)}
+.bhead b{font-size:19px;font-weight:680;letter-spacing:-.02em}
+.bhead button{margin-left:auto;border:0;background:none;font-size:20px;line-height:1;color:var(--ink-3);cursor:pointer;padding:2px 4px}
+.bhead button:hover{color:var(--ink)}
+.btermini{padding:10px 15px 0;display:flex;gap:6px;flex-wrap:wrap}
+.btermin{font-family:var(--mono);font-size:11.5px;background:var(--cas-bg);color:var(--cas);
+  border-radius:var(--r);padding:3px 8px;font-weight:600}
+.bilj textarea{display:block;width:calc(100% - 30px);margin:12px 15px 15px;border:1px solid var(--linija);
+  border-radius:var(--r);padding:10px;font:inherit;font-size:14.5px;min-height:96px;resize:vertical;
+  background:var(--list);color:var(--ink)}
+.bilj textarea:focus{outline:2px solid var(--cas);outline-offset:1px;border-color:var(--cas)}
+
+.usek{border-top:1px solid var(--linija-2);padding:12px 15px 15px}
+.uhead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.uhead b{font-size:13.5px;font-weight:650}
+.uhead span{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.uhead button{margin-left:auto;border:0;background:none;color:var(--cas);font:inherit;font-size:12.5px;font-weight:650;cursor:pointer;padding:2px}
+.prekid{display:flex;gap:2px;background:var(--linija-2);border-radius:var(--r);padding:2px;margin-left:auto}
+.prekid button{border:0;background:none;border-radius:4px;padding:5px 11px;font:inherit;
+  font-size:12.5px;font-weight:600;color:var(--ink-3);cursor:pointer}
+.prekid button[aria-selected=true]{background:var(--list);color:var(--ink);box-shadow:0 1px 2px rgba(27,36,32,.14)}
+
+.ulista{list-style:none;margin:0;padding:0}
+.ulista li{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--linija-2)}
+.ulista li:first-child{border-top:0}
+.ulista li.ods .ime{opacity:.45;text-decoration:line-through}
+.ulista .ime{font-size:14.5px;font-weight:600;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ulista .zbir2{font-family:var(--mono);font-size:11px;color:var(--ink-3);flex:none}
+.ulista .danasp{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--cas);min-width:20px;text-align:center;flex:none}
+.ured-red{display:flex;align-items:center;gap:9px;width:100%;background:none;border:0;padding:7px 0;
+  font:inherit;text-align:left;cursor:pointer;color:inherit}
+.ured-red .strelica{color:var(--ink-4);font-size:10px;flex:none}
+.oznake{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex:1 1 auto}
+.oz{font-size:11px;font-weight:650;border-radius:999px;padding:2px 8px;background:var(--stop-bg);color:var(--stop);white-space:nowrap}
+.oz.dobro{background:var(--cas-bg);color:var(--cas)}
+.oz.nula{background:var(--linija-2);color:var(--ink-3);font-weight:600}
+.cipred{display:flex;gap:6px;flex-wrap:wrap;padding:2px 0 10px}
+.cipred button{border:1px solid var(--linija);background:var(--list);border-radius:999px;padding:7px 12px;
+  font:inherit;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.cipred button:hover{border-color:var(--ink-3)}
+.cipred button.on{background:var(--stop);border-color:var(--stop);color:var(--na-akcentu)}
+.cipred button.dobro.on{background:var(--cas);border-color:var(--cas)}
+.cipred .viseoz{border-style:dashed;color:var(--ink-3)}
+.ubtn{border:1px solid var(--linija);background:var(--list);border-radius:var(--r);width:34px;height:32px;
+  font-size:15px;font-weight:600;line-height:1;cursor:pointer;color:var(--ink-2);flex:none;padding:0}
+.ubtn:hover{border-color:var(--ink-3)}
+.ubtn.plus{color:var(--cas);border-color:var(--cas-ivica)}
+.ubtn.ods{color:var(--stop)}
+.ubtn.ods.aktivan{background:var(--stop);border-color:var(--stop);color:var(--na-akcentu)}
+.unap{width:100%;border:1px solid var(--linija);border-radius:var(--r);padding:8px 9px;font:inherit;
+  font-size:13.5px;margin:0 0 10px;background:var(--list);color:var(--ink)}
+.unap:focus{outline:2px solid var(--cas);outline-offset:1px;border-color:var(--cas)}
+.uspisak{width:100%;border:1px solid var(--linija);border-radius:var(--r);padding:11px;font:inherit;
+  font-size:14.5px;min-height:150px;resize:vertical;background:var(--list);color:var(--ink)}
+.uspisak:focus{outline:2px solid var(--cas);outline-offset:1px;border-color:var(--cas)}
+.ured{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.upom{font-size:12.5px;color:var(--ink-3);margin-top:8px;line-height:1.5}
+
+.pregled{list-style:none;margin:0;padding:0}
+.pregled li{border-top:1px solid var(--linija-2);padding:8px 0;display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.pregled li:first-child{border-top:0}
+.pregled .ime{font-size:14.5px;font-weight:600;flex:0 0 auto}
+.pregled .cist,.cist{font-size:12.5px;color:var(--ink-3)}
+
+/* ---------- zbir i sekcije ---------- */
+.zbir{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;margin-top:20px;
+  padding-top:12px;border-top:1px solid var(--linija);font-size:13.5px;color:var(--ink-3)}
+.zbir b{color:var(--ink);font-size:16px}
+.zakcije{margin-left:auto;display:flex;gap:14px}
+.zakcije button{border:0;background:none;color:var(--cas);font:inherit;font-size:13.5px;font-weight:650;cursor:pointer;padding:0}
+details{margin-top:2px;background:transparent;border:0;border-top:1px solid var(--linija);padding:13px 2px}
+details[open]{padding-bottom:18px}
+summary{cursor:pointer;font-weight:650;font-size:14.5px;list-style:none;display:flex;align-items:center;gap:8px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";font-family:var(--mono);font-size:14px;color:var(--ink-4);width:14px}
+details[open] summary::before{content:"–"}
+
+.bells{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12.5px;margin-top:12px}
+.bells th{font-family:var(--sans);font-size:11.5px;color:var(--ink-3);font-weight:650;padding:6px;text-align:left}
+.bells td{padding:6px;border-top:1px solid var(--linija-2);color:var(--ink-2)}
+.bells tr.aktivan td{background:var(--cas-bg);color:var(--cas);font-weight:600}
+
+.nred{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:12px}
+.nred input,.nred select{border:1px solid var(--linija);border-radius:var(--r);padding:9px 9px;
+  font:inherit;font-size:14px;background:var(--list);color:var(--ink)}
+.nred input[type=text]{flex:1 1 160px;min-width:0}
+.polje{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:650;color:var(--ink-3)}
+.polje select,.polje input{border:1px solid var(--linija);border-radius:var(--r);padding:9px;
+  font:inherit;font-size:14px;background:var(--list);color:var(--ink)}
+.nlista{list-style:none;margin:12px 0 0;padding:0}
+.nlista li{display:flex;align-items:center;gap:10px;font-size:13.5px;border-top:1px solid var(--linija-2);padding:8px 0;flex-wrap:wrap}
+.nlista li b{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);min-width:88px;font-weight:500}
+.nlista li button{margin-left:auto;border:0;background:none;color:var(--ink-4);font-size:17px;cursor:pointer;padding:0 3px}
+.nlista li button:hover{color:var(--stop)}
+.prazno-nap{color:var(--ink-3);font-size:13.5px;margin-top:12px;line-height:1.5}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;background:var(--tabla);color:var(--kreda);
+  padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;
+  transition:opacity .18s;max-width:88%;text-align:center;box-shadow:0 6px 18px rgba(27,36,32,.22)}
+.toast.on{opacity:1}
+
+@media(max-width:420px){
+  .zime{font-size:21px}
+  .zbroj strong{font-size:21px}
+  h1{font-size:17px}
+}
+
+@media print{
+  body{background:#fff;font-size:11pt}
+  header{background:#fff;color:#000;border-bottom:2px solid #000}
+  h1 span{color:#444}
+  .tools,.zivo,.bilj,details,.toast,.mob,.ured2{display:none!important}
+  .grid{display:block;border-color:#999}
+  .cell.pun,.cell.sada{background:#EEF3F0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cell.sada .ime{color:#000}.cell.sada .vr{color:#555}
+  thead th.dnes,td.dnes{background:#fff!important;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1 id="naslov">Moj raspored časova<span id="pod">—</span></h1>
+    <div class="tools">
+      <button class="btn" id="btnInstal" style="display:none">Instaliraj</button>
+      <button class="btn zvono" id="btnZvono">Podsjetnik</button>
+      <button class="btn" id="btnEdit">Izmeni</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="zivo"></section>
+  <section id="bilj"></section>
+  <section id="uredjivac"></section>
+  <div class="grid"><table id="tab"></table></div>
+  <div class="mob" id="mob"></div>
+  <div class="zbir" id="zbir"></div>
+
+  <details id="dZadaci">
+    <summary>Zadaci i podsjetnici</summary>
+    <div class="nred">
+      <input type="date" id="zaDatum">
+      <input type="text" id="zaTekst" placeholder="ponijeti kontrolne za VIII-6…">
+      <button class="btn" id="zaDodaj">Dodaj</button>
+    </div>
+    <div id="zaLista"></div>
+  </details>
+
+  <details id="dPlanovi">
+    <summary>Planovi gradiva</summary>
+    <div id="pLista"></div>
+  </details>
+
+  <details>
+    <summary>Neradni i skraćeni dani</summary>
+    <div class="nred">
+      <input type="date" id="nDatum">
+      <select id="nVrsta">
+        <option value="nerad">Neradan dan</option>
+        <option value="skr">Skraćeni časovi</option>
+      </select>
+      <input type="text" id="nRazlog" placeholder="praznik, priredba, roditeljski…">
+      <button class="btn" id="nDodaj">Dodaj</button>
+    </div>
+    <div id="nLista"></div>
+  </details>
+
+  <details>
+    <summary>Smjene i zvona</summary>
+    <div class="uhead" style="margin-top:14px"><b>Promjena smjene</b></div>
+    <div id="rBox"></div>
+
+    <div class="uhead" style="margin-top:14px"><b>Zvona u školi</b></div>
+    <div id="zBox"></div>
+
+    <div class="uhead" style="margin-top:16px"><b>Raspored zvona</b></div>
+    <table class="bells" id="zvona"></table>
+
+    <div class="uhead" style="margin-top:16px"><b>Skraćeni časovi</b></div>
+    <div class="nred">
+      <label class="polje">Čas
+        <select id="kCas">
+          <option value="40">40 min</option>
+          <option value="35">35 min</option>
+          <option value="30">30 min</option>
+        </select>
+      </label>
+      <label class="polje">Odmor
+        <select id="kMali">
+          <option value="5">5 min</option>
+          <option value="10">10 min</option>
+          <option value="15">15 min</option>
+        </select>
+      </label>
+      <label class="polje">Veliki odmor
+        <select id="kVeliki">
+          <option value="5">5 min</option>
+          <option value="10">10 min</option>
+          <option value="15">15 min</option>
+          <option value="20">20 min</option>
+        </select>
+      </label>
+    </div>
+    <div class="upom" id="kPregled"></div>
+  </details>
+
+  <details>
+    <summary>Podešavanja</summary>
+    <div class="nred">
+      <input type="text" id="mIme" placeholder="ime nastavnika">
+      <input type="text" id="mPredmet" placeholder="predmet">
+    </div>
+    <div class="upom">Stoji u zaglavlju. Korisno ako aplikaciju koristi više nastavnika na istom računaru.</div>
+
+    <div class="uhead" style="margin-top:14px"><b>Početak školske godine</b></div>
+    <div class="nred"><input type="date" id="mPocetak"></div>
+    <div class="upom">Od ovog datuma se broje časovi kad aplikacija sama određuje nastavnu jedinicu.</div>
+
+    <div class="uhead" style="margin-top:14px"><b>Izgled</b></div>
+    <div class="prekid" id="tBox" style="margin:8px 0 0">
+      <button data-tema="auto">Kao telefon</button>
+      <button data-tema="svijetla">Svijetla</button>
+      <button data-tema="tamna">Tamna</button>
+    </div>
+
+    <div class="ured"><button class="btn" id="mReset">Obriši sve i počni ispočetka</button></div>
+  </details>
+
+  <details>
+    <summary>Sigurnosna kopija</summary>
+    <div class="nred">
+      <button class="btn" id="kSnimi">Snimi kopiju</button>
+      <button class="btn" id="kVrati">Vrati iz kopije</button>
+      <button class="btn" id="kCsv">Izvezi evidenciju (CSV)</button>
+      <input type="file" id="kFajl" accept=".json,application/json" hidden>
+    </div>
+    <div class="prazno-nap" id="kStanje"></div>
+  </details>
+
+
+  <details>
+    <summary>Kako se koristi</summary>
+    <div class="upom" style="font-size:13.5px;line-height:1.7">
+      <b>1.</b> „Izmeni" — izaberi smjenu za svaki dan i upiši odjeljenja po časovima.<br>
+      <b>2.</b> Na vrhu ti stalno stoji koji je čas u toku i za koliko zvoni.<br>
+      <b>3.</b> „Podsjetnik" javi zvukom 5 minuta prije časa, dok je aplikacija otvorena.<br>
+      <b>4.</b> U „Planovi gradiva" učitaj svoj godišnji plan iz Worda ili Excela — dalje ti sama piše koja je nastavna jedinica na redu.<br>
+      <b>5.</b> Klikni odjeljenje: spisak učenika, oznake za čas, pregled i plan.<br>
+      <b>6.</b> Praznik i ekskurziju upiši u „Neradni dani", a čas koji otpadne označi sa „nije održan".<br>
+      <b>7.</b> „Snimi kopiju" povremeno — sve stoji samo u ovom brauzeru.
+    </div>
+    <div class="ured"><button class="btn" id="mPodijeli" style="display:none">Podijeli link kolegi</button></div>
+  </details>
+
+</main>
+
+<div class="wrap" style="padding-bottom:26px"><div class="upom" id="verzija" style="text-align:center"></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+var MAXC = 8;  /* najviše časova u smjeni */
+function podrZvona(){
+  return {
+    I:  {poc:"07:00", cas:45, odmor:5, veliki:20, poslije:2, broj:7},
+    M:  {poc:"11:25", cas:45, odmor:5, veliki:20, poslije:1, broj:4},
+    II: {poc:"13:20", cas:45, odmor:5, veliki:20, poslije:3, broj:7}
+  };
+}
+var ZVONA = podrZvona();
+var ROT = {on:false, rezim:"mjesecno", ref:"", pomak:0};
+var ZAD = {};
+var POC = "";              /* početak školske godine */
+var PM = {};               /* pomak po odjeljenju (otkazani/dodatni časovi) */
+var RUCNO = {};            /* odjeljenja koja se vode ručno */
+var PRESK = {};            /* otkazani časovi: "2026-11-18|VIII-9|0" -> 1 */              /* zadaci: "2026-11-20" -> ["ponijeti kontrolne", ...] */   /* ref = ponedjeljak sedmice u kojoj raspored važi kako je upisan */
+var BELLS = {};
+function nizZvona(z){
+  var out = [], kraj = sek(z.poc);
+  for(var i=0;i<z.broj;i++){
+    if(i) kraj += ((z.poslije && i === z.poslije) ? z.veliki : z.odmor) * 60;
+    var zav = kraj + z.cas * 60;
+    out.push([vrijeme(kraj), vrijeme(zav)]);
+    kraj = zav;
+  }
+  return out;
+}
+function gradiZvona(){
+  BELLS = {I: nizZvona(ZVONA.I), M: nizZvona(ZVONA.M), II: nizZvona(ZVONA.II)};
+}
+function najviseCasova(){
+  return Math.max(ZVONA.I.broj, ZVONA.M.broj, ZVONA.II.broj);
+}
+gradiZvona();
+var SMENA = {"":"nema nastave", I:"I smena", M:"međusmena", II:"II smena"};
+var DANI = [["pon","Ponedeljak","Pon"],["uto","Utorak","Uto"],["sre","Sreda","Sre"],["cet","Četvrtak","Čet"],["pet","Petak","Pet"]];
+var NAJAVA = 5; /* minuta prije časa */
+var OZNAKE = [
+  {k:"plus",      n:"aktivan",       kratko:"+",         dobro:true, brojac:true, cesto:true},
+  {k:"pomogao",   n:"pomogao",       kratko:"pomogao",   dobro:true},
+  {k:"predao",    n:"predao rad",    kratko:"predao",    dobro:true},
+  {k:"neaktivan", cesto:true, n:"neaktivan",     kratko:"neaktivan"},
+  {k:"neprati", cesto:true,   n:"ometa čas",     kratko:"ometa"},
+  {k:"pribor", cesto:true,    n:"nema pribor",   kratko:"pribor"},
+  {k:"materijal", n:"nema materijal",kratko:"materijal"},
+  {k:"zadaca", cesto:true,    n:"nema zadaću",   kratko:"zadaća"},
+  {k:"sigurnost", n:"ne pazi s alatom", kratko:"alat"},
+  {k:"zvaka",     n:"žvaka",         kratko:"žvaka"},
+  {k:"hrana",     n:"jede/pije",     kratko:"jede"},
+  {k:"telefon",   n:"telefon",       kratko:"telefon"},
+  {k:"kasni",     n:"kasnio",        kratko:"kasnio"},
+  {k:"ods", cesto:true,       n:"odsutan",       kratko:"odsutan"}
+];
+function ozn(k){ for(var i=0;i<OZNAKE.length;i++) if(OZNAKE[i].k===k) return OZNAKE[i]; return null; }
+
+function podrazumevano(){
+  var o = {};
+  DANI.forEach(function(d){
+    var c = []; for(var i=0;i<MAXC;i++) c.push("");
+    o[d[0]] = {smena:"I", casovi:c};
+  });
+  return o;
+}
+function praznRaspored(){
+  var prazno = true;
+  DANI.forEach(function(d){ R[d[0]].casovi.forEach(function(c){ if(c) prazno = false; }); });
+  return prazno;
+}
+var R = podrazumevano();   /* raspored */
+var N = {};                /* neradni dani: "2026-09-10" -> razlog */
+var SK = {};               /* skraćeni časovi: "2026-09-10" -> 1 */
+var KONF = {cas:30, mali:5, veliki:20};
+var B = {};                /* bilješke: "VIII-4" -> tekst */
+var U = {};                /* učenici: "VIII-4" -> ["Amina H.", ...] */
+var E = {};                /* evidencija: datum -> odjeljenje -> ime -> {p,o} */
+var BU = {};               /* bilješke o učeniku: "VIII-4|Imran A." -> tekst */
+var MOJ = {ime:"", predmet:""};
+var P = {};                /* plan gradiva: "VIII" -> [{n:naziv, t:tip}] */
+var NAP = {};              /* napredak: "VIII-4" -> {indeks -> datum} */
+
+var MJESECI = ["SEPTEMBAR","OKTOBAR","NOVEMBAR","DECEMBAR","JANUAR","FEBRUAR","MART","APRIL","MAJ","JUN","JUL","AVGUST"];
+var TIPOVI = {"O":"obrada","U":"utvrđivanje","V":"vježba","P":"provjera","UČ":"uvodni čas","UC":"uvodni čas","S":"sistematizacija"};
+var RIJECI = {"obrada":"O","obrade":"O","utvrđivanje":"U","utvrdjivanje":"U","utvrđivanja":"U","vežba":"V","vežbe":"V",
+  "vježba":"V","vjezba":"V","vezba":"V","provera":"P","provjera":"P","proveravanje":"P","test":"P","testiranje":"P",
+  "uvodni":"UČ","sistematizacija":"S","ponavljanje":"U"};
+var SMECE = /naziv nastavne jedinice|tip[a]? časa|oblik rada|metoda rada|nastavna sredstva|međupred|ishodi|r\. ?br|datum predaje|legenda|predmetni nastavnik|evaluacija|nast\. teme|– ?obrada|– ?vežba|– ?frontalni|– ?monološka|godišnji fond|nedeljni fond|školska godina|kompetencij|korelacij/i;
+
+function jeMjesec(red){
+  var g = red.replace(/^[#\s]*/,"").replace(/^mesec[:\s]*/i,"").replace(/^mjesec[:\s]*/i,"").replace(/[:\.\s]+$/,"").trim().toUpperCase();
+  return MJESECI.indexOf(g) >= 0 ? g : null;
+}
+function brojeviIz(t){
+  if(!/^[\s\d\.\)\-–,\/]+$/.test(t)) return null;
+  var b = t.match(/\d+/g);
+  if(!b || !b.length) return null;
+  b = b.map(Number);
+  if(b.length === 2 && /[-–]/.test(t) && b[1] > b[0]){
+    var out = []; for(var i=b[0]; i<=b[1]; i++) out.push(i); return out;
+  }
+  return b;
+}
+function tipoviIz(t){
+  if(!t) return null;
+  var d = t.split(/[,\/\s]+/).filter(Boolean), out = [];
+  for(var i=0;i<d.length;i++){
+    var k = d[i].toUpperCase().replace(/[^A-ZČ]/g,"");
+    var r = d[i].toLowerCase().replace(/[^a-zčćžšđ]/g,"");
+    if(TIPOVI[k]) out.push(k === "UC" ? "UČ" : k);
+    else if(RIJECI[r]) out.push(RIJECI[r]);
+    else return null;
+  }
+  return out.length ? out : null;
+}
+function tipIzTeksta(t){
+  var m = t.toLowerCase().match(/\b(obrada|utvrđivanje|utvrdjivanje|vježba|vežba|vezba|provjera|provera|sistematizacija|uvodni)\b/);
+  return m ? RIJECI[m[1]] : null;
+}
+
+function tipRijec(t){
+  if(!t) return "";
+  var k = String(t).toUpperCase().replace(/[^A-ZČĆŽŠĐ]/g,"");
+  return TIPOVI[k] || t.toLowerCase();
+}
+function podrPocetak(){
+  var d = new Date(), g = d.getFullYear();
+  if(d.getMonth() < 7) g--;
+  return g + "-09-01";
+}
+function naDan(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function kljucPresk(dat, odj, idx){ return kljuc(dat) + "|" + odj + "|" + idx; }
+function preskocen(dat, odj, idx){ return !!PRESK[kljucPresk(dat, odj, idx)]; }
+
+/* koliko je časova tog odjeljenja bilo od početka godine do datuma */
+function brojCasovaDo(odj, dat, prijeRednog){
+  var kraj = naDan(dat);
+  var poc = new Date((POC || podrPocetak()) + "T00:00:00");
+  if(isNaN(poc.getTime())) return 0;
+  var d = naDan(poc), n = 0, zastita = 0;
+  while(d <= kraj && zastita++ < 600){
+    var i = idxDana(d);
+    if(i >= 0 && !neradan(d)){
+      var dk = DANI[i][0], danas = (d.getTime() === kraj.getTime());
+      for(var k2 = 0; k2 < MAXC; k2++){
+        if(R[dk].casovi[k2] !== odj) continue;
+        if(danas && prijeRednog !== undefined && k2 >= prijeRednog) continue;
+        if(preskocen(d, odj, k2)) continue;
+        n++;
+      }
+    }
+    d = new Date(d.getTime() + 86400000);
+  }
+  return n;
+}
+function autoRezim(odj){ return !RUCNO[odj]; }
+function pomakZa(odj){ return PM[odj] || 0; }
+
+function jedinicaCasa(odj, dat, redni){
+  var pl = planZa(odj);
+  if(!pl.length) return null;
+  if(!autoRezim(odj)) return null;
+  if(redni !== undefined && preskocen(dat, odj, redni)) return {otkazan:true};
+  var i = brojCasovaDo(odj, dat, redni) + pomakZa(odj);
+  if(i < 0 || i >= pl.length) return null;
+  return {i:i, j:pl[i]};
+}
+
+/* k-ta neodrađena jedinica (ručni režim) */
+function jedinicaZa(odj, k){
+  var pl = planZa(odj), n = odradjeno(odj), preskoc = k || 0;
+  for(var i = 0; i < pl.length; i++){
+    if(n[i]) continue;
+    if(preskoc){ preskoc--; continue; }
+    return {i:i, j:pl[i]};
+  }
+  return null;
+}
+function opisJedinice(x, duz){
+  if(!x) return "";
+  if(x.otkazan) return "čas nije održan";
+  var t = tipRijec(x.j.t), n = x.j.n;
+  if(t && n.toLowerCase().indexOf(t.toLowerCase()) === 0) t = "";
+  if(duz && n.length > duz) n = n.slice(0, duz).replace(/[\s,;.]+$/, "") + "…";
+  return (x.i+1) + ". " + (t ? t + ": " : "") + n;
+}
+
+function citajPlan(tekst){
+  var out = [], mj = "", kol = null;
+
+  tekst.split("\n").forEach(function(sirovi){
+    var red = sirovi.replace(/\u00a0/g," ").replace(/\s+$/,"");
+    if(!red.trim()) return;
+
+    var m = jeMjesec(red.trim());
+    if(m){ mj = m; return; }
+    var mm = red.match(/mesec\s*:\s*([A-Za-zČĆŽŠĐčćžšđ]+)/i) || red.match(/mjesec\s*:\s*([A-Za-zČĆŽŠĐčćžšđ]+)/i);
+    if(mm){ var m2 = jeMjesec(mm[1]); if(m2){ mj = m2; return; } }
+
+    var celije = red.indexOf("\t") >= 0 ? red.split("\t")
+               : red.indexOf("|") >= 0 ? red.split("|")
+               : red.split(/\s{3,}/);
+    celije = celije.map(function(x){ return x.replace(/\u00a0/g," ").trim(); });
+
+    /* zaglavlje tabele: zapamti koje su kolone */
+    var mala = celije.map(function(c){ return c.toLowerCase(); });
+    var iNaziv = -1;
+    for(var z = 0; z < mala.length; z++) if(mala[z].indexOf("naziv nastavne jedinice") >= 0){ iNaziv = z; break; }
+    if(iNaziv >= 0){
+      var naci = function(k){ for(var q = 0; q < mala.length; q++) if(mala[q].indexOf(k) >= 0) return q; return -1; };
+      if(!kol) out.length = 0;   /* sve prije zaglavlja je uvod dokumenta */
+      kol = {naziv:iNaziv, br:naci("r. br"), tip:naci("tip ča")};
+      return;
+    }
+
+    var naziv = "", tip = null, br = null;
+
+    if(kol && celije.length > kol.naziv){
+      naziv = celije[kol.naziv];
+      if(!naziv || !/[a-zA-ZčćžšđČĆŽŠĐ]/.test(naziv)) return;
+      if(SMECE.test(naziv)) return;
+      if(kol.br >= 0 && celije[kol.br]) br = brojeviIz(celije[kol.br]);
+      if(kol.tip >= 0 && celije[kol.tip]) tip = tipoviIz(celije[kol.tip]);
+    } else {
+      if(kol) return;   /* u tabeli plana gledamo samo prave redove */
+      if(SMECE.test(red) && !/^\s*\d/.test(red)) return;
+      var iB = -1;
+      for(var i = 0; i < celije.length; i++){ var b = brojeviIz(celije[i]); if(b){ iB = i; br = b; break; } }
+      if(iB >= 0){
+        for(var j = iB+1; j < celije.length; j++){
+          var c = celije[j];
+          if(!c || !/[a-zA-ZčćžšđČĆŽŠĐ]/.test(c)) continue;
+          if(tipoviIz(c)){ if(!tip) tip = tipoviIz(c); continue; }
+          if(c.length < 3) continue;
+          if(!naziv){ naziv = c; continue; }
+          if(!tip){ var t2 = tipoviIz(c); if(t2) tip = t2; }
+        }
+      }
+      if(!naziv){
+        var kand = celije.filter(function(c){ return /[a-zA-ZčćžšđČĆŽŠĐ]/.test(c) && !tipoviIz(c) && c.length > 3 && !SMECE.test(c); });
+        kand.sort(function(a,b2){ return b2.length - a.length; });
+        naziv = kand[0] || "";
+        if(!tip) for(var k = 0; k < celije.length; k++){ var t3 = tipoviIz(celije[k]); if(t3){ tip = t3; break; } }
+      }
+      if(!naziv) return;
+      if(!br){
+        var vodeci = naziv.match(/^\s*(\d+)\s*[-–]\s*(\d+)[\.\)]?\s+/);
+        if(vodeci){ br = []; for(var v = +vodeci[1]; v <= +vodeci[2]; v++) br.push(v); naziv = naziv.slice(vodeci[0].length); }
+        else { var jed = naziv.match(/^\s*(\d+)[\.\)]\s+/); if(jed){ br = [+jed[1]]; naziv = naziv.slice(jed[0].length); } }
+      } else naziv = naziv.replace(/^\s*\d+[\.\)]?\s*[-–]?\s*/,"");
+    }
+
+    var uzagradi = naziv.match(/[\(\[]([^\)\]]{1,20})[\)\]]\s*$/);
+    if(uzagradi && !tip){ var t4 = tipoviIz(uzagradi[1]); if(t4){ tip = t4; naziv = naziv.slice(0, uzagradi.index).trim(); } }
+    var rep = naziv.match(/[\s\-–:,]+(obrada|utvrđivanje|utvrdjivanje|vježba|vežba|vezba|provjera|provera|sistematizacija)\s*$/i);
+    if(rep){ if(!tip) tip = [RIJECI[rep[1].toLowerCase()]]; naziv = naziv.slice(0, rep.index).trim(); }
+    if(!tip){ var t5 = tipIzTeksta(naziv); if(t5) tip = [t5]; }
+
+    var djelovi = naziv.split(/\s*\/\s*|\s{2,}/).map(function(x){ return x.trim(); }).filter(Boolean);
+    var n = br && br.length > 1 ? br.length : 1;
+    if(djelovi.length > 1 && djelovi.length === n) naziv = null; else djelovi = null;
+
+    for(var q2 = 0; q2 < n; q2++){
+      var ime2 = (djelovi ? djelovi[q2] : naziv).replace(/\s+/g," ").trim();
+      if(!ime2) continue;
+      out.push({n:ime2, t:(tip ? (tip[q2] || tip[tip.length-1]) : ""), m:mj});
+    }
+  });
+  return out;
+}
+/* čitanje .docx, .xlsx i tekstualnih fajlova bez biblioteka */
+async function raspakuj(buf, trazeni){
+  var dv = new DataView(buf), n = buf.byteLength;
+  var eocd = -1;
+  for(var i = n - 22; i >= 0 && i > n - 66000; i--){
+    if(dv.getUint32(i, true) === 0x06054b50){ eocd = i; break; }
+  }
+  if(eocd < 0) throw new Error("nije zip");
+  var brojUnosa = dv.getUint16(eocd + 10, true);
+  var poc = dv.getUint32(eocd + 16, true);
+  var p = poc;
+  for(var k = 0; k < brojUnosa; k++){
+    if(dv.getUint32(p, true) !== 0x02014b50) break;
+    var metod = dv.getUint16(p + 10, true);
+    var velKompr = dv.getUint32(p + 20, true);
+    var duzImena = dv.getUint16(p + 28, true);
+    var duzExtra = dv.getUint16(p + 30, true);
+    var duzKom = dv.getUint16(p + 32, true);
+    var offset = dv.getUint32(p + 42, true);
+    var ime = new TextDecoder().decode(new Uint8Array(buf, p + 46, duzImena));
+    if(ime === trazeni){
+      var lh = offset;
+      if(dv.getUint32(lh, true) !== 0x04034b50) throw new Error("loš zapis");
+      var lImena = dv.getUint16(lh + 26, true), lExtra = dv.getUint16(lh + 28, true);
+      var dpoc = lh + 30 + lImena + lExtra;
+      var podaci = new Uint8Array(buf, dpoc, velKompr);
+      if(metod === 0) return new TextDecoder().decode(podaci);
+      var ds = new DecompressionStream("deflate-raw");
+      var tok = new Blob([podaci]).stream().pipeThrough(ds);
+      var raspakovano = await new Response(tok).arrayBuffer();
+      return new TextDecoder().decode(raspakovano);
+    }
+    p += 46 + duzImena + duzExtra + duzKom;
+  }
+  throw new Error("nema " + trazeni);
+}
+
+function tekstIzWordXml(xml){
+  var doc = new DOMParser().parseFromString(xml, "application/xml");
+  var NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+  var tijelo = doc.getElementsByTagNameNS(NS, "body")[0];
+  if(!tijelo) return "";
+  var redovi = [];
+  function tekstPar(p){
+    var t = p.getElementsByTagNameNS(NS, "t"), s = "";
+    for(var i = 0; i < t.length; i++) s += t[i].textContent;
+    return s.replace(/\s+/g, " ").trim();
+  }
+  function obradi(el){
+    for(var i = 0; i < el.childNodes.length; i++){
+      var c = el.childNodes[i];
+      if(c.nodeType !== 1) continue;
+      if(c.localName === "p"){
+        var s = tekstPar(c);
+        if(s) redovi.push(s);
+      } else if(c.localName === "tbl"){
+        var tr = c.getElementsByTagNameNS(NS, "tr");
+        for(var r = 0; r < tr.length; r++){
+          if(tr[r].parentNode !== c) continue;
+          var tc = tr[r].getElementsByTagNameNS(NS, "tc"), celije = [];
+          for(var k = 0; k < tc.length; k++){
+            if(tc[k].parentNode !== tr[r]) continue;
+            var par = tc[k].getElementsByTagNameNS(NS, "p"), dio = [];
+            for(var q = 0; q < par.length; q++){
+              var s2 = tekstPar(par[q]);
+              if(s2) dio.push(s2);
+            }
+            celije.push(dio.join(" / "));
+          }
+          if(celije.join("").trim()) redovi.push(celije.join("\t"));
+        }
+      }
+    }
+  }
+  obradi(tijelo);
+  return redovi.join("\n");
+}
+
+async function tekstIzFajla(file){
+  var ime = (file.name || "").toLowerCase();
+  if(ime.slice(-5) === ".docx"){
+    var buf = await file.arrayBuffer();
+    return tekstIzWordXml(await raspakuj(buf, "word/document.xml"));
+  }
+  if(ime.slice(-5) === ".xlsx" || ime.slice(-5) === ".xlsm"){
+    var buf2 = await file.arrayBuffer();
+    return await tekstIzXlsx(buf2);
+  }
+  var t = await file.text();
+  if(ime.slice(-4) === ".csv" && t.indexOf("\t") < 0) t = t.replace(/;/g, "\t");
+  return t;
+}
+
+
+/* ---- Excel ---- */
+function zipSpisak(buf){
+  var dv = new DataView(buf), n = buf.byteLength, eocd = -1;
+  for(var i = n - 22; i >= 0 && i > n - 66000; i--) if(dv.getUint32(i, true) === 0x06054b50){ eocd = i; break; }
+  if(eocd < 0) return [];
+  var broj = dv.getUint16(eocd + 10, true), p = dv.getUint32(eocd + 16, true), imena = [];
+  for(var k = 0; k < broj; k++){
+    if(dv.getUint32(p, true) !== 0x02014b50) break;
+    var di = dv.getUint16(p + 28, true), de = dv.getUint16(p + 30, true), dk = dv.getUint16(p + 32, true);
+    imena.push(new TextDecoder().decode(new Uint8Array(buf, p + 46, di)));
+    p += 46 + di + de + dk;
+  }
+  return imena;
+}
+function kolonaIz(ref){
+  var slova = (ref || "").replace(/[0-9]/g, ""), n = 0;
+  for(var i = 0; i < slova.length; i++) n = n * 26 + (slova.charCodeAt(i) - 64);
+  return n - 1;
+}
+async function tekstIzXlsx(buf){
+  var imena = zipSpisak(buf);
+  var dijeljeni = [];
+  if(imena.indexOf("xl/sharedStrings.xml") >= 0){
+    var sx = new DOMParser().parseFromString(await raspakuj(buf, "xl/sharedStrings.xml"), "application/xml");
+    var si = sx.getElementsByTagName("si");
+    for(var i = 0; i < si.length; i++){
+      var t = si[i].getElementsByTagName("t"), s = "";
+      for(var j = 0; j < t.length; j++) s += t[j].textContent;
+      dijeljeni.push(s);
+    }
+  }
+  var listovi = imena.filter(function(x){ return /^xl\/worksheets\/sheet\d+\.xml$/.test(x); })
+                     .sort(function(a, b){ return a.localeCompare(b, "en", {numeric:true}); });
+  var redovi = [];
+  for(var L = 0; L < listovi.length; L++){
+    var doc = new DOMParser().parseFromString(await raspakuj(buf, listovi[L]), "application/xml");
+    var row = doc.getElementsByTagName("row");
+    for(var r = 0; r < row.length; r++){
+      var c = row[r].getElementsByTagName("c"), celije = [];
+      for(var q = 0; q < c.length; q++){
+        var idx = kolonaIz(c[q].getAttribute("r")), tip = c[q].getAttribute("t"), v = "";
+        if(tip === "inlineStr"){
+          var it = c[q].getElementsByTagName("t");
+          for(var w = 0; w < it.length; w++) v += it[w].textContent;
+        } else {
+          var vv = c[q].getElementsByTagName("v")[0];
+          v = vv ? vv.textContent : "";
+          if(tip === "s") v = dijeljeni[+v] || "";
+        }
+        if(idx < 0) idx = celije.length;
+        while(celije.length < idx) celije.push("");
+        celije.push(String(v).replace(/\s+/g, " ").trim());
+      }
+      if(celije.join("").trim()) redovi.push(celije.join("\t"));
+    }
+  }
+  return redovi.join("\n");
+}
+
+function pisiPlan(pl){
+  var mj = "", red = [];
+  pl.forEach(function(j){
+    if(j.m && j.m !== mj){ mj = j.m; red.push((red.length?"\n":"") + "# " + mj); }
+    red.push(j.n + (j.t ? " | " + j.t : ""));
+  });
+  return red.join("\n");
+}
+function razred(odj){ return String(odj).split("-")[0]; }
+function planZa(odj){ return P[razred(odj)] || []; }
+function odradjeno(odj){ return NAP[odj] || {}; }
+function sljedecaJedinica(odj){
+  var pl = planZa(odj), n = odradjeno(odj);
+  for(var i=0;i<pl.length;i++) if(!n[i]) return {i:i, j:pl[i]};
+  return null;
+}
+var edit = false, uredi = false, otvoreno = "", ucenik = "", pogled = "danas", poredak = "ime";
+var sveOznake = false;
+var zvono = false, ac = null, javljeno = {};
+
+var memorija = {}, cuvaRadi = true;
+function citaj(k, pod){
+  try{ var o = JSON.parse(window.localStorage.getItem(k) || "null"); return o || pod; }
+  catch(e){ cuvaRadi = false; return (k in memorija) ? memorija[k] : pod; }
+}
+function pisi(k, v){
+  memorija[k] = v;
+  try{ window.localStorage.setItem(k, JSON.stringify(v)); }
+  catch(e){
+    if(cuvaRadi){ cuvaRadi = false; toast("Ovaj brauzer ne čuva izmjene — otvori fajl na drugi način"); }
+  }
+}
+function ucitaj(){
+  var o = citaj("skola-v2", null);
+  if(o) DANI.forEach(function(d){
+    if(o[d[0]]){
+      R[d[0]].smena = o[d[0]].smena || "";
+      for(var i=0;i<MAXC;i++) R[d[0]].casovi[i] = (o[d[0]].casovi && o[d[0]].casovi[i]) || "";
+    }
+  });
+  N = citaj("skola-nerad", {});
+  SK = citaj("skola-skraceni", {});
+  TEMA = citaj("skola-tema", "auto") || "auto";
+  ZAD = citaj("skola-zadaci", {});
+  POC = citaj("skola-pocetak", "") || podrPocetak();
+  PM = citaj("skola-pomak", {});
+  RUCNO = citaj("skola-rucno", {});
+  PRESK = citaj("skola-preskoceni", {});
+
+  var rt = citaj("skola-rotacija", null);
+  if(rt){
+    ROT.on = !!rt.on;
+    ROT.rezim = rt.rezim || (rt.ref ? "sedmicno" : "mjesecno");
+    ROT.ref = rt.ref || "";
+    ROT.pomak = rt.pomak ? 1 : 0;
+  }
+
+  var zv = citaj("skola-zvona", null);
+  if(zv) ["I","M","II"].forEach(function(k){
+    if(zv[k]) ["poc","cas","odmor","veliki","poslije","broj"].forEach(function(f){
+      if(zv[k][f] !== undefined && zv[k][f] !== null) ZVONA[k][f] = zv[k][f];
+    });
+  });
+  ZVONA.I.broj = Math.min(MAXC, Math.max(1, ZVONA.I.broj));
+  ZVONA.M.broj = Math.min(MAXC, Math.max(1, ZVONA.M.broj));
+  ZVONA.II.broj = Math.min(MAXC, Math.max(1, ZVONA.II.broj));
+  gradiZvona();
+
+  var kf = citaj("skola-konf", null);
+  if(kf){ KONF.cas = Math.max(30, kf.cas || 30); KONF.mali = kf.mali || 5; KONF.veliki = kf.veliki || 20; }
+  B = citaj("skola-biljeske", {});
+  U = citaj("skola-ucenici", {});
+  E = citaj("skola-evidencija", {});
+  BU = citaj("skola-ubiljeske", {});
+  P = citaj("skola-plan", {});
+  NAP = citaj("skola-napredak", {});
+  MOJ = citaj("skola-moj", {ime:"", predmet:""});
+  Object.keys(E).forEach(function(d){
+    Object.keys(E[d]||{}).forEach(function(o){
+      Object.keys(E[d][o]||{}).forEach(function(i){
+        var z = E[d][o][i];
+        if(z && z.p !== undefined){ z.plus = z.p; delete z.p; }
+        if(z && z.o !== undefined){ z.ods = 1; delete z.o; }
+      });
+    });
+  });
+}
+
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function sek(t){ var p = t.split(":"); return (+p[0])*3600 + (+p[1])*60; }
+function dva(n){ return (n<10?"0":"")+n; }
+function odbroj(s){
+  s = Math.max(0, Math.round(s));
+  var h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60;
+  return h ? h+":"+dva(m)+":"+dva(x) : dva(m)+":"+dva(x);
+}
+function kljuc(d){ return d.getFullYear()+"-"+dva(d.getMonth()+1)+"-"+dva(d.getDate()); }
+function lijepDatum(k){ var p = k.split("-"); return p[2]+"."+p[1]+"."+p[0]+"."; }
+function idxDana(d){ var w = d.getDay(); return (w>=1 && w<=5) ? w-1 : -1; }
+function neradan(d){ return N[kljuc(d)] || null; }
+function skraceni(d){ return !!SK[kljuc(d)]; }
+function skrati(b){
+  var out = [], kraj = sek(b[0][0]);
+  for(var i=0;i<b.length;i++){
+    var pauza = 0;
+    if(i){
+      var izvorna = sek(b[i][0]) - sek(b[i-1][1]);
+      pauza = (izvorna >= 15*60 ? KONF.veliki : KONF.mali) * 60;
+    }
+    var poc = kraj + pauza, zav = poc + KONF.cas*60;
+    out.push([vrijeme(poc), vrijeme(zav)]);
+    kraj = zav;
+  }
+  return out;
+}
+function vrijeme(x){ x = ((x % 86400) + 86400) % 86400; return dva(Math.floor(x/3600)) + ":" + dva(Math.floor(x%3600/60)); }
+function zvonaZa(smena, dat){
+  var b = BELLS[smena];
+  if(!b) return null;
+  return (dat && skraceni(dat)) ? skrati(b) : b;
+}
+function ponedjeljak(d){
+  var w = d.getDay();
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((w + 6) % 7));
+}
+/* ponedjeljak od kojeg važi smjena za taj mjesec:
+   1. u ponedjeljak ili utorak -> ponedjeljak te sedmice (može biti 30. ili 31.)
+   inače -> prvi ponedjeljak poslije 1. */
+function ponedjeljakPromjene(god, mj){
+  var prvi = new Date(god, mj, 1), w = prvi.getDay();
+  if(w === 1) return prvi;
+  if(w === 2) return new Date(god, mj, 0);
+  var dana = (8 - w) % 7;
+  if(dana === 0) dana = 7;
+  return new Date(god, mj, 1 + dana);
+}
+function indeksPerioda(dat){
+  var g = dat.getFullYear(), m = dat.getMonth();
+  /* promjena za sljedeći mjesec zna pasti 30. ili 31. ovog */
+  var gs = g, ms = m + 1;
+  if(ms > 11){ ms = 0; gs++; }
+  if(dat >= ponedjeljakPromjene(gs, ms)) return gs*12 + ms;
+  if(dat < ponedjeljakPromjene(g, m)){ m--; if(m < 0){ m = 11; g--; } }
+  return g*12 + m;
+}
+function sljedecaPromjena(dat){
+  var g = dat.getFullYear(), m = dat.getMonth();
+  var p = ponedjeljakPromjene(g, m);
+  if(p > dat) return p;
+  m++; if(m > 11){ m = 0; g++; }
+  return ponedjeljakPromjene(g, m);
+}
+function obrnutaSedmica(dat){
+  if(!ROT.on) return false;
+  if(ROT.rezim === "mjesecno")
+    return ((indeksPerioda(dat) + (ROT.pomak || 0)) % 2 + 2) % 2 === 1;
+  if(!ROT.ref) return false;
+  var a = ponedjeljak(dat), b = new Date(ROT.ref + "T00:00:00");
+  if(isNaN(b.getTime())) return false;
+  var sedmica = Math.round((a - ponedjeljak(b)) / 604800000);
+  return ((sedmica % 2) + 2) % 2 === 1;
+}
+function smenaNa(dk, dat){
+  var osn = R[dk] ? R[dk].smena : "";
+  if(!dat || (osn !== "I" && osn !== "II")) return osn;
+  return obrnutaSedmica(dat) ? (osn === "I" ? "II" : "I") : osn;
+}
+function datumDana(dk){
+  var n = new Date(), w = n.getDay(), i = DANI.map(function(x){ return x[0]; }).indexOf(dk);
+  var pon = new Date(n.getFullYear(), n.getMonth(), n.getDate() - ((w + 6) % 7));
+  return new Date(pon.getTime() + i*86400000);
+}
+
+function casoviDana(dk, dat){
+  var d = R[dk], b = zvonaZa(smenaNa(dk, dat), dat);
+  if(!b) return [];
+  var out = [];
+  d.casovi.forEach(function(ime,i){
+    if(ime && ime.trim() && i < b.length)
+      out.push({br:i+1, ime:ime.trim(), od:b[i][0], "do":b[i][1], a:sek(b[i][0]), z:sek(b[i][1])});
+  });
+  return out;
+}
+function terminiOdjeljenja(ime){
+  var out = [];
+  DANI.forEach(function(d){
+    casoviDana(d[0]).forEach(function(c){ if(c.ime === ime) out.push({dan:d[2], br:c.br, od:c.od, "do":c["do"]}); });
+  });
+  return out;
+}
+
+/* ---------- stanje ---------- */
+function sljedeciDan(od){
+  for(var k=1;k<=14;k++){
+    var d = new Date(od.getTime() + k*86400000);
+    var i = idxDana(d);
+    if(i < 0 || neradan(d)) continue;
+    var l = casoviDana(DANI[i][0], d);
+    if(l.length) return {dan:DANI[i][1], lista:l, sutra:k===1};
+  }
+  return null;
+}
+
+function stanje(){
+  var now = new Date();
+  var t = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+  var i = idxDana(now);
+  var dk = i >= 0 ? DANI[i][0] : "";
+  var nr = neradan(now);
+
+  if(nr) return {tip:"neradan", dk:dk, razlog:nr, dalje:sljedeciDan(now)};
+
+  var lista = dk ? casoviDana(dk, now) : [];
+  if(lista.length){
+    for(var j=0;j<lista.length;j++){
+      var c = lista[j];
+      if(t >= c.a && t < c.z)
+        return {tip:"cas", dk:dk, lista:lista, cas:c, ostalo:c.z-t, proteklo:t-c.a, ukupno:c.z-c.a, sljedeci:lista[j+1]||null};
+      if(t < c.a)
+        return {tip:"odmor", dk:dk, lista:lista, cilj:c, ostalo:c.a-t, prethodni: j>0 ? lista[j-1] : null,
+                proteklo: j>0 ? t-lista[j-1].z : 0, ukupno: j>0 ? c.a-lista[j-1].z : 0, prvi:j===0};
+    }
+    return {tip:"kraj", dk:dk, lista:lista, prethodni:lista[lista.length-1], dalje:sljedeciDan(now)};
+  }
+  return {tip:"slobodan", dk:dk, dalje:sljedeciDan(now)};
+}
+
+/* ---------- živi panel ---------- */
+function dugmeOdrzano(odjeljenje, uvod, redni){
+  var auto = autoRezim(odjeljenje) && planZa(odjeljenje).length;
+  var mali = 'style="padding:3px 9px;font-size:12px"';
+
+  if(auto && redni !== undefined && preskocen(new Date(), odjeljenje, redni))
+    return esc(odjeljenje) + ' — <b>čas nije održan</b> ' +
+      '<button class="btn" data-vrati="' + esc(odjeljenje) + '|' + redni + '" ' + mali + '>vrati</button>';
+
+  var sl = (auto && redni !== undefined) ? jedinicaCasa(odjeljenje, new Date(), redni) : sljedecaJedinica(odjeljenje);
+  if(!sl || sl.otkazan) return "";
+  return uvod + "<b>" + (sl.i+1) + ". " + esc(sl.j.n) + "</b>" +
+    (sl.j.t ? ' <span class="oz nula">' + esc(tipRijec(sl.j.t)) + '</span>' : "") +
+    (auto
+      ? ' <button class="btn" data-nije="' + esc(odjeljenje) + '|' + redni + '" title="Čas se nije održao" ' + mali + '>nije održan</button>' +
+        ' <button class="btn" id="zPomak" data-odj="' + esc(odjeljenje) + '" title="Ako broj nije tačan" ' + mali + '>nije tačno</button>'
+      : ' <button class="btn" id="zOdrzan" data-odj="' + esc(odjeljenje) + '" data-i="' + sl.i + '" ' + mali + '>Održano</button>');
+}
+
+function crtajZivo(){
+  var now = new Date();
+  var sat = dva(now.getHours())+":"+dva(now.getMinutes())+":"+dva(now.getSeconds());
+  var t = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+  if(praznRaspored()){
+    document.getElementById("zivo").innerHTML =
+      '<div class="pocetak"><h2>Unesi svoj raspored</h2>' +
+      '<p>Izaberi smjenu za svaki dan i upiši odjeljenja po časovima. Traje par minuta, poslije se sve vrti samo.</p>' +
+      '<button class="btn on" id="zPocni">Unesi raspored</button></div>';
+    document.getElementById("pod").textContent = MOJ.predmet || "podešavanje";
+    var zp = document.getElementById("zPocni");
+    if(zp) zp.onclick = function(){ document.getElementById("btnEdit").onclick(); };
+    return;
+  }
+
+  var s = stanje();
+  var klasa = "", zag = "", ime = "", vrij = "", oz = "", broj = "", pct = 0, zatim = "", cip = "";
+
+  if(s.tip === "cas"){
+    klasa = "cas";
+    zag = s.cas.br + ". čas u toku";
+    ime = s.cas.ime;
+    vrij = s.cas.od + "–" + s.cas["do"];
+    oz = "zvoni za"; broj = odbroj(s.ostalo);
+    pct = s.proteklo / s.ukupno * 100;
+    var og = dugmeOdrzano(s.cas.ime, "Nastavna jedinica: ", s.cas.br - 1);
+    zatim = (og ? og + "<br>" : "") +
+            (s.sljedeci ? "Zatim <b>"+esc(s.sljedeci.ime)+"</b> u "+s.sljedeci.od
+                        : "Poslije ovog časa si gotov za danas.");
+  } else if(s.tip === "odmor"){
+    klasa = "odmor";
+    zag = s.prvi ? "Nastava još nije počela" : "Odmor";
+    ime = s.cilj.ime;
+    vrij = s.cilj.br + ". čas · " + s.cilj.od + "–" + s.cilj["do"];
+    oz = "počinje za"; broj = odbroj(s.ostalo);
+    pct = s.ukupno ? s.proteklo / s.ukupno * 100 : 0;
+    var og2 = s.prethodni
+      ? dugmeOdrzano(s.prethodni.ime, esc(s.prethodni.ime) + " — upiši: ", s.prethodni.br - 1)
+      : dugmeOdrzano(s.cilj.ime, "Na redu: ", s.cilj.br - 1);
+    zatim = (og2 ? og2 + "<br>" : "") +
+            "Danas ukupno <b>"+s.lista.length+"</b> časova, kraj u "+s.lista[s.lista.length-1]["do"]+".";
+  } else if(s.tip === "kraj"){
+    zag = "Gotovo za danas";
+    ime = "Nema više časova";
+    vrij = "odradio si " + s.lista.length + " časa danas";
+    var og3 = s.prethodni ? dugmeOdrzano(s.prethodni.ime, esc(s.prethodni.ime) + " — upiši: ", s.prethodni.br - 1) : "";
+    zatim = (og3 ? og3 + "<br>" : "") +
+            (s.dalje ? "Sljedeće: <b>"+(s.dalje.sutra?"sutra":s.dalje.dan)+"</b> u "+s.dalje.lista[0].od : "");
+  } else if(s.tip === "neradan"){
+    klasa = "neradan";
+    zag = "Neradan dan";
+    ime = s.razlog;
+    vrij = "danas nema nastave";
+    zatim = s.dalje ? "Sljedeće: <b>"+(s.dalje.sutra?"sutra":s.dalje.dan)+"</b> u "+s.dalje.lista[0].od : "";
+  } else {
+    zag = s.dk ? "Danas nemaš nastavu" : "Vikend";
+    ime = s.dalje ? s.dalje.dan : "—";
+    vrij = s.dalje ? s.dalje.lista[0].od + " · prvi čas " + s.dalje.lista[0].ime : "";
+  }
+
+  if(s.lista && s.lista.length){
+    cip = '<div class="cipovi">' + s.lista.map(function(c){
+      var st = (t >= c.z) ? "gotov" : ((t >= c.a) ? "sad" : "");
+      return '<span class="cip '+st+'" data-odj="'+esc(c.ime)+'">'+c.br+'. '+esc(c.ime)+(B[c.ime]?' <u>•</u>':'')+'</span>';
+    }).join("") + '</div>';
+  }
+
+  var najava = "";
+  if(ROT.on && ROT.rezim === "mjesecno"){
+    var pr = sljedecaPromjena(now);
+    var danaDo = Math.round((new Date(pr.getFullYear(), pr.getMonth(), pr.getDate()) -
+                             new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+    var poslije = ((indeksPerioda(pr) + (ROT.pomak || 0)) % 2 + 2) % 2 === 1;
+    if(danaDo >= 0 && danaDo <= 7){
+      var dkP = DANI[0][0], osn = R[dkP] ? R[dkP].smena : "";
+      var novaSm = (osn === "I" || osn === "II") ? (poslije ? (osn === "I" ? "II" : "I") : osn) : "";
+      najava = '<div class="traka-red smjena">' +
+        '<b>Promjena smjene</b> — ' +
+        (danaDo === 0 ? "od danas" : (danaDo === 1 ? "od sutra" : "za " + danaDo + " dana, u ponedjeljak " + pr.getDate() + "." + (pr.getMonth()+1) + ".")) +
+        (novaSm ? ", ponedjeljkom " + SMENA[novaSm] : "") + '</div>';
+    }
+  }
+
+  var zad = zadaciNa(now);
+  var zadHtml = zad.length
+    ? '<div class="traka-red zadaci"><b>Danas:</b> ' + zad.map(esc).join(" · ") + '</div>'
+    : "";
+
+  var redovi = "";
+
+  /* zadaci i najava promjene smjene — ono čega nema u listi */
+  redovi += zadHtml + najava;
+
+  /* nastavna jedinica i dugmad za čas u toku ili onaj koji je upravo prošao */
+  var jedRed = "";
+  if(s.tip === "cas") jedRed = dugmeOdrzano(s.cas.ime, esc(s.cas.ime) + " · ", s.cas.br - 1);
+  else if(s.tip === "odmor") jedRed = s.prethodni
+      ? dugmeOdrzano(s.prethodni.ime, esc(s.prethodni.ime) + " · upiši: ", s.prethodni.br - 1)
+      : dugmeOdrzano(s.cilj.ime, "Na redu " + esc(s.cilj.ime) + " · ", s.cilj.br - 1);
+  else if(s.tip === "kraj" && s.prethodni)
+      jedRed = dugmeOdrzano(s.prethodni.ime, esc(s.prethodni.ime) + " · upiši: ", s.prethodni.br - 1);
+  if(jedRed) redovi += '<div class="traka-red gradivo">' + jedRed + '</div>';
+
+  /* kratko stanje kad nema časa u toku */
+  var stanjeRed = "";
+  if(s.tip === "odmor")
+    stanjeRed = (s.prvi ? "Nastava počinje u " + s.cilj.od : "Odmor do " + s.cilj.od) +
+                " · <b>" + esc(s.cilj.ime) + "</b> za " + odbroj(s.ostalo);
+  else if(s.tip === "kraj")
+    stanjeRed = "Gotovo za danas" + (s.dalje ? " · sljedeće " + (s.dalje.sutra ? "sutra" : s.dalje.dan.toLowerCase()) + " u " + s.dalje.lista[0].od : "");
+  else if(s.tip === "neradan")
+    stanjeRed = "<b>Neradan dan</b> — " + esc(s.razlog) +
+                (s.dalje ? " · sljedeće " + (s.dalje.sutra ? "sutra" : s.dalje.dan.toLowerCase()) + " u " + s.dalje.lista[0].od : "");
+  else if(s.tip === "slobodan")
+    stanjeRed = (s.dk ? "Danas nemaš nastavu" : "Vikend") +
+                (s.dalje ? " · " + s.dalje.dan.toLowerCase() + " u " + s.dalje.lista[0].od : "");
+  if(stanjeRed) redovi += '<div class="traka-red">' + stanjeRed + '</div>';
+
+  document.getElementById("zivo").innerHTML = redovi;
+
+  var p = document.getElementById("pod");
+  if(s.dk){
+    var l = casoviDana(s.dk, now);
+    p.innerHTML = esc(DANI.filter(function(d){return d[0]===s.dk;})[0][1]) + " · " +
+      '<button class="smjena-dugme" id="zOkreniSm" title="Okreni smjene">' +
+        (s.tip==="neradan" ? "neradan dan" : SMENA[smenaNa(s.dk, now)]) + ' <span>⇄</span></button>' +
+      (s.tip==="neradan" ? "" : (l.length ? " · "+l[0].od+"–"+l[l.length-1]["do"] : " · slobodno"));
+  } else p.textContent = "vikend — nema nastave";
+
+  var li = document.getElementById("liOstalo");
+  if(li) li.textContent = (s.tip === "cas" || s.tip === "odmor") ? odbroj(s.ostalo) : "";
+
+  var zos = document.getElementById("zOkreniSm");
+  if(zos) zos.onclick = okreniSmjene;
+
+  document.querySelectorAll("#zivo .cip[data-odj], #zivo .zime-dugme[data-odj]").forEach(function(el){
+    el.onclick = function(){ otvori(el.dataset.odj); };
+  });
+  document.querySelectorAll("#zivo [data-nije]").forEach(function(b){
+    b.onclick = function(){
+      var d2 = b.dataset.nije.split("|");
+      PRESK[kljucPresk(new Date(), d2[0], +d2[1])] = 1;
+      pisi("skola-preskoceni", PRESK);
+      toast(d2[0] + " — čas upisan kao neodržan");
+      crtajZivo(); crtaj(); if(otvoreno) crtajUcenici();
+    };
+  });
+  document.querySelectorAll("#zivo [data-vrati]").forEach(function(b){
+    b.onclick = function(){
+      var d3 = b.dataset.vrati.split("|");
+      delete PRESK[kljucPresk(new Date(), d3[0], +d3[1])];
+      pisi("skola-preskoceni", PRESK);
+      crtajZivo(); crtaj(); if(otvoreno) crtajUcenici();
+    };
+  });
+
+  var zp = document.getElementById("zPomak");
+  if(zp) zp.onclick = function(){
+    otvoreno = zp.dataset.odj; pogled = "gradivo"; uredi = false;
+    crtajBilj();
+    var bel = document.getElementById("bilj");
+    try{ if(bel.scrollIntoView) bel.scrollIntoView({block:"nearest", behavior:"smooth"}); }catch(e){}
+  };
+
+  var zo = document.getElementById("zOdrzan");
+  if(zo) zo.onclick = function(){
+    var o = zo.dataset.odj;
+    NAP[o] = NAP[o] || {};
+    NAP[o][zo.dataset.i] = kljuc(new Date());
+    pisi("skola-napredak", NAP);
+    toast("Upisano u " + o);
+    crtajZivo();
+    if(otvoreno === o) crtajUcenici();
+  };
+}
+
+/* ---------- bilješke i učenici ---------- */
+function otvori(ime){
+  otvoreno = (otvoreno === ime) ? "" : ime;
+  uredi = false;
+  crtajBilj();
+  if(otvoreno){
+    var bel = document.getElementById("bilj");
+    try{ if(bel.scrollIntoView) bel.scrollIntoView({block:"nearest", behavior:"smooth"}); }catch(e){}
+  }
+}
+function crtajBilj(){
+  var el = document.getElementById("bilj");
+  if(!otvoreno){ el.innerHTML = ""; return; }
+  var t = terminiOdjeljenja(otvoreno);
+  var br = (U[otvoreno] || []).length;
+  el.innerHTML =
+    '<div class="bilj"><div class="bhead"><b>'+esc(otvoreno)+'</b>' +
+      (br ? '<span class="btermin">'+br+' učenika</span>' : '') +
+      '<button id="bZatvori" title="Zatvori">×</button></div>' +
+    '<div class="btermini">' + (t.length
+      ? t.map(function(x){ return '<span class="btermin">'+x.dan+' '+x.br+'. · '+x.od+'</span>'; }).join("")
+      : '<span class="btermin">nema u rasporedu</span>') + '</div>' +
+    '<textarea id="bText" placeholder="Šta ste zadnji put radili, šta je zadato…">'+esc(B[otvoreno]||"")+'</textarea>' +
+    '<div class="usek" id="uc"></div></div>';
+  document.getElementById("bZatvori").onclick = function(){ otvoreno = ""; uredi = false; crtajBilj(); };
+  var ta = document.getElementById("bText");
+  ta.oninput = function(){
+    B[otvoreno] = ta.value;
+    if(!ta.value.trim()) delete B[otvoreno];
+    pisi("skola-biljeske", B);
+  };
+  crtajUcenici();
+}
+
+function danasnjaEv(odj){
+  var d = kljuc(new Date());
+  if(!E[d]) E[d] = {};
+  if(!E[d][odj]) E[d][odj] = {};
+  return E[d][odj];
+}
+function ocisti(z, e, ime){
+  var prazan = true;
+  Object.keys(z).forEach(function(k){ if(z[k]) prazan = false; else delete z[k]; });
+  if(prazan) delete e[ime];
+}
+function zbir(odj, ime){
+  var out = {}, dana = 0;
+  Object.keys(E).forEach(function(d){
+    var z = E[d] && E[d][odj] && E[d][odj][ime];
+    if(!z) return;
+    dana++;
+    OZNAKE.forEach(function(o){
+      if(!z[o.k]) return;
+      out[o.k] = (out[o.k] || 0) + (o.brojac ? z[o.k] : 1);
+    });
+  });
+  return {po:out, dana:dana};
+}
+function danaSaEvidencijom(odj){
+  var n = 0, prvi = null;
+  Object.keys(E).sort().forEach(function(d){
+    if(E[d] && E[d][odj] && Object.keys(E[d][odj]).length){ n++; if(!prvi) prvi = d; }
+  });
+  return {n:n, prvi:prvi};
+}
+
+function lose(po){ var n = 0; OZNAKE.forEach(function(o){ if(!o.dobro && po[o.k]) n += po[o.k]; }); return n; }
+function bkljuc(ime){ return otvoreno + "|" + ime; }
+
+function crtajUcenici(){
+  var el = document.getElementById("uc");
+  if(!el) return;
+  var lista = U[otvoreno] || [];
+
+  var glava = '<div class="uhead">' +
+    '<div class="prekid" style="margin:0 0 0 auto"><button data-pog="danas" aria-selected="'+(pogled==="danas")+'">Danas</button>' +
+    '<button data-pog="pregled" aria-selected="'+(pogled==="pregled")+'">Pregled</button>' +
+    '<button data-pog="gradivo" aria-selected="'+(pogled==="gradivo")+'">Gradivo</button></div></div>';
+
+  if(pogled === "gradivo"){ crtajGradivo(el, glava); return; }
+
+  /* --- uređivanje spiska --- */
+  if(uredi || !lista.length){
+    el.innerHTML = glava +
+      '<div class="uhead"><b>Spisak učenika</b></div>' +
+      '<textarea class="uspisak" id="uText" placeholder="Jedno ime u redu:&#10;Imran A.&#10;Ubejdullah B.&#10;Ermin B.">'+esc(lista.join("\n"))+'</textarea>' +
+      '<div class="ured"><button class="btn" id="uSacuvaj">Sačuvaj spisak</button>' +
+      (lista.length ? '<button class="btn" id="uOdustani">Odustani</button>' : '') + '</div>' +
+      '<div class="upom">Nalijepi spisak odjednom. Ostaje samo na ovom telefonu — dovoljno je ime i prvo slovo prezimena.</div>';
+    document.getElementById("uSacuvaj").onclick = function(){
+      var nova = document.getElementById("uText").value.split("\n")
+        .map(function(x){ return x.trim(); }).filter(function(x){ return x; });
+      var vidjeno = {}, dupli = [];
+      nova.forEach(function(x){ if(vidjeno[x]) dupli.push(x); vidjeno[x] = 1; });
+      if(dupli.length){
+        toast("Dva puta isto ime: " + dupli[0] + " — dodaj slovo prezimena");
+        return;
+      }
+      if(nova.length) U[otvoreno] = nova; else delete U[otvoreno];
+      pisi("skola-ucenici", U);
+      uredi = false; ucenik = ""; crtajBilj();
+      toast(nova.length ? nova.length + " učenika upisano" : "Spisak obrisan");
+    };
+    var od = document.getElementById("uOdustani");
+    if(od) od.onclick = function(){ uredi = false; crtajUcenici(); };
+    el.querySelectorAll("[data-pog]").forEach(function(b){
+      b.onclick = function(){ pogled = b.dataset.pog; ucenik = ""; uredi = false; crtajUcenici(); };
+    });
+    return;
+  }
+
+  /* --- pregled kroz vrijeme --- */
+  if(pogled === "pregled"){
+    var st = danaSaEvidencijom(otvoreno);
+    var redom = lista.slice();
+    if(poredak === "oznake")
+      redom.sort(function(x,y){ return lose(zbir(otvoreno,y).po) - lose(zbir(otvoreno,x).po); });
+
+    el.innerHTML = glava +
+      '<div class="upom" style="margin:0 0 9px">' +
+        (st.n ? "Upisano " + st.n + " dana" + (st.prvi ? ", od " + lijepDatum(st.prvi) : "") : "Još nema upisa.") +
+        ' · <button id="pPoredak" style="border:0;background:none;color:var(--cas);font:inherit;font-weight:700;cursor:pointer">' +
+        (poredak==="ime" ? "poredaj po oznakama" : "poredaj po imenu") + '</button>' +
+        ' · <button id="pKopiraj" style="border:0;background:none;color:var(--cas);font:inherit;font-weight:700;cursor:pointer">kopiraj</button></div>' +
+      '<ul class="pregled">' + redom.map(function(ime){
+        var z = zbir(otvoreno, ime).po;
+        var ozn2 = OZNAKE.filter(function(o){ return z[o.k]; }).map(function(o){
+          return '<span class="oz '+(o.dobro?"dobro":"")+'">'+o.kratko+' '+z[o.k]+'</span>';
+        }).join("");
+        var nap = BU[bkljuc(ime)];
+        return '<li><span class="ime">'+esc(ime)+'</span><span class="oznake">' +
+               (ozn2 || '<span class="oz nula">čisto</span>') + '</span>' +
+               (nap ? '<span class="cist" style="flex:1 1 100%">'+esc(nap)+'</span>' : '') + '</li>';
+      }).join("") + '</ul>' +
+      '<div class="upom">Brojevi su koliko puta je oznaka upisana, od početka vođenja.</div>';
+    vezi(el);
+    return;
+  }
+
+  /* --- današnji dan --- */
+  var ev = danasnjaEv(otvoreno);
+  var d = new Date();
+  var odsutnih = lista.filter(function(i){ return ev[i] && ev[i].ods; }).length;
+
+  el.innerHTML = glava +
+    '<div class="upom" style="margin:0 0 8px">' + dva(d.getDate())+"."+dva(d.getMonth()+1)+". · prisutno " +
+      (lista.length - odsutnih) + "/" + lista.length +
+      ' · <button id="uUredi" style="border:0;background:none;color:var(--cas);font:inherit;font-weight:700;cursor:pointer">uredi spisak</button></div>' +
+    '<ul class="ulista">' + lista.map(function(ime){
+      var z = ev[ime] || {};
+      var ozn2 = OZNAKE.filter(function(o){ return z[o.k]; }).map(function(o){
+        return '<span class="oz '+(o.dobro?"dobro":"")+'">'+o.kratko+(o.brojac&&z[o.k]>1?" "+z[o.k]:"")+'</span>';
+      }).join("");
+      var otv = (ucenik === ime);
+      var nap = BU[bkljuc(ime)] || "";
+      return '<li class="'+(z.ods?"ods":"")+'" style="display:block">' +
+        '<button class="ured-red" data-u="'+esc(ime)+'"><span class="strelica">'+(otv?"▾":"▸")+'</span>' +
+        '<span class="ime">'+esc(ime)+'</span><span class="oznake">'+ozn2+'</span></button>' +
+        (otv ? '<div class="cipred">' + OZNAKE.filter(function(o){ return sveOznake || o.cesto || z[o.k]; }).map(function(o){
+            return '<button class="'+(o.dobro?"dobro ":"")+(z[o.k]?"on":"")+'" data-oz="'+o.k+'" data-ime="'+esc(ime)+'">' +
+                   (o.brojac ? o.n+(z[o.k]?" "+z[o.k]:"") : o.n) + '</button>';
+          }).join("") +
+          '<button class="viseoz" data-vise="1">' + (sveOznake ? "manje" : "više…") + '</button>' +
+          (z.plus ? '<button data-skini="plus" data-ime="'+esc(ime)+'" title="Skini jedan plus">− aktivan</button>' : '') +
+          '</div>' +
+          '<input class="unap" data-nap="'+esc(ime)+'" value="'+esc(nap)+'" placeholder="bilješka o učeniku (npr. sjedi naprijed, ne vidi dobro)">'
+        : (nap ? '<div class="cist" style="padding:0 0 6px 19px">'+esc(nap)+'</div>' : '')) +
+      '</li>';
+    }).join("") + '</ul>' +
+    '<div class="upom">Klikni ime pa oznaku. Ponovni dodir skida oznaku, a „aktivan" se sabira.</div>';
+
+  vezi(el);
+}
+
+function crtajGradivo(el, glava){
+  var r = razred(otvoreno), pl = planZa(otvoreno), n = odradjeno(otvoreno);
+  var gotovo = Object.keys(n).length;
+
+  if(uredi || !pl.length){
+    el.innerHTML = glava +
+      '<textarea class="uspisak" id="gText" style="min-height:230px" placeholder="# SEPTEMBAR&#10;1. Uvodni čas | UČ&#10;2. Elektrotehnika i mehatronika | O&#10;&#10;# OKTOBAR&#10;…">' +
+      esc(pisiPlan(pl)) + '</textarea>' +
+      '<div class="ured"><button class="btn" id="gSacuvaj">Sačuvaj plan</button>' +
+      (pl.length ? '<button class="btn" id="gOdustani">Odustani</button>' : '') + '</div>' +
+      '<div class="upom">Plan važi za cijeli ' + esc(r) + ' razred. Nalijepi cijeli godišnji plan odjednom — redni brojevi se uklanjaju sami, ' +
+      'tip časa ide iza uspravne crte (O obrada, U utvrđivanje, V vježba, P provjera, UČ uvodni čas), ' +
+      'a red koji počinje sa # ili je samo naziv mjeseca dijeli plan na mjesece.</div>';
+    document.getElementById("gSacuvaj").onclick = function(){
+      var nova = citajPlan(document.getElementById("gText").value);
+      if(nova.length) P[r] = nova; else delete P[r];
+      pisi("skola-plan", P);
+      uredi = false; crtajUcenici();
+      toast(nova.length ? nova.length + " časova u planu" : "Plan obrisan");
+    };
+    var go = document.getElementById("gOdustani");
+    if(go) go.onclick = function(){ uredi = false; crtajUcenici(); };
+    return;
+  }
+
+  var sl = sljedecaJedinica(otvoreno);
+  var auto = autoRezim(otvoreno);
+  var danasCas = null, danasIdx = -1;
+  if(auto){
+    var dnesI = idxDana(new Date());
+    if(dnesI >= 0){
+      var dkk = DANI[dnesI][0];
+      for(var q = 0; q < MAXC; q++) if(R[dkk].casovi[q] === otvoreno){ danasIdx = q; break; }
+      if(danasIdx >= 0) danasCas = jedinicaCasa(otvoreno, new Date(), danasIdx);
+      if(danasCas && danasCas.otkazan) danasCas = null;   /* otkazan čas ne troši jedinicu */
+    }
+    if(!danasCas){
+      var bd = brojCasovaDo(otvoreno, new Date()) + pomakZa(otvoreno);
+      if(bd >= 0 && bd < pl.length) danasCas = {i:bd, j:pl[bd]};
+    }
+  }
+  el.innerHTML = glava +
+    (function(){
+      var sedmicno = 0;
+      DANI.forEach(function(d){ R[d[0]].casovi.forEach(function(c){ if(c === otvoreno) sedmicno++; }); });
+      var ostalo = pl.length - gotovo;
+      return '<div class="upom" style="margin:0 0 9px">' + esc(r) + ' razred · odrađeno <b>' + gotovo + '/' + pl.length + '</b>' +
+        (ostalo > 0 ? ' · ostalo ' + ostalo + (sedmicno ? ', po ' + sedmicno + ' časa sedmično ≈ ' + Math.ceil(ostalo/sedmicno) + ' sedmica' : '') : ' · plan odrađen') +
+        '</div>';
+    })() +
+    '<div class="upom" style="margin:0 0 9px">' +
+      '<div class="prekid" style="margin:0 0 9px;display:inline-flex">' +
+        '<button data-nac="auto" aria-selected="' + auto + '">Broji po datumu</button>' +
+        '<button data-nac="rucno" aria-selected="' + (!auto) + '">Ručno</button>' +
+      '</div>' +
+      (auto
+        ? '<div>Sljedeći čas kod ' + esc(otvoreno) + ' je <b>' + (danasCas ? (danasCas.i+1) + ". " + esc(danasCas.j.n) : "van plana") + '</b>' +
+          ' <button class="btn" data-pm="-1" style="padding:3px 9px;font-size:12px">− čas</button>' +
+          ' <button class="btn" data-pm="1" style="padding:3px 9px;font-size:12px">+ čas</button>' +
+          (pomakZa(otvoreno) ? ' <span class="oz nula">pomak ' + (pomakZa(otvoreno) > 0 ? "+" : "") + pomakZa(otvoreno) + '</span>' : '') +
+          '<br>Računa se od ' + lijepDatum(POC) + ', bez neradnih dana i otkazanih časova.' +
+          (function(){
+            var kl = Object.keys(PRESK).filter(function(k){ return k.split("|")[1] === otvoreno; }).sort();
+            if(!kl.length) return "";
+            return '<br>Otkazano: ' + kl.map(function(k){
+              return '<span class="oz nula">' + lijepDatum(k.split("|")[0]) +
+                ' <button data-otk="' + k + '" style="border:0;background:none;color:var(--stop);cursor:pointer;font:inherit;padding:0 2px">×</button></span>';
+            }).join(" ");
+          })() + '</div>'
+        : '<div>Označavaš ručno, dugmetom „Održano".</div>') +
+      '<button id="gUredi" style="border:0;background:none;color:var(--cas);font:inherit;font-weight:700;cursor:pointer;padding:0">uredi plan</button></div>' +
+    '<ul class="pregled">' + (function(){
+      var mj = "", red = "";
+      pl.forEach(function(j, i){
+        if(j.m && j.m !== mj){
+          mj = j.m;
+          red += '<li style="border-top:0;padding-top:11px"><span class="oz nula" style="letter-spacing:.04em">'+esc(mj)+'</span></li>';
+        }
+        var dat = n[i], nared = (sl && sl.i === i);
+        red += '<li style="'+(dat?"opacity:.55":"")+(nared?"background:var(--cas-bg);border-radius:8px;padding:7px 8px":"")+'">' +
+          '<span class="zbir2" style="min-width:20px">'+(i+1)+'.</span>' +
+          '<span class="ime" style="flex:1 1 auto;font-weight:'+(nared?"700":"500")+'">'+esc(j.n)+'</span>' +
+          (j.t ? '<span class="oz nula">'+esc(j.t)+'</span>' : '') +
+          (dat ? '<span class="cist">'+lijepDatum(dat)+'</span><button class="ubtn" data-ponisti="'+i+'" title="Poništi" style="width:28px;height:26px;font-size:13px">↺</button>'
+               : (nared ? '<button class="btn" data-odrzan="'+i+'" style="padding:5px 10px">Održano</button>' : '')) +
+        '</li>';
+      });
+      return red;
+    })() + '</ul>' +
+    (sl ? '' : '<div class="upom">Cijeli plan je odrađen. Dopuni ga kroz „uredi plan".</div>');
+
+  vezi(el);
+}
+
+function pregledTekst(){
+  var st = danaSaEvidencijom(otvoreno);
+  var t = otvoreno + " — pregled" + (st.prvi ? " od " + lijepDatum(st.prvi) : "") + ", " + st.n + " dana\n";
+  (U[otvoreno] || []).forEach(function(ime){
+    var z = zbir(otvoreno, ime).po;
+    var d = OZNAKE.filter(function(o){ return z[o.k]; }).map(function(o){ return o.kratko + " " + z[o.k]; }).join(", ");
+    var nap = BU[bkljuc(ime)];
+    t += ime + ": " + (d || "čisto") + (nap ? " — " + nap : "") + "\n";
+  });
+  return t;
+}
+
+function vezi(el){
+  el.querySelectorAll("[data-pog]").forEach(function(b){
+    b.onclick = function(){ pogled = b.dataset.pog; ucenik = ""; uredi = false; crtajUcenici(); };
+  });
+  var ur = document.getElementById("uUredi");
+  if(ur) ur.onclick = function(){ uredi = true; crtajUcenici(); };
+  var pp = document.getElementById("pPoredak");
+  if(pp) pp.onclick = function(){ poredak = (poredak==="ime") ? "oznake" : "ime"; crtajUcenici(); };
+  var pk = document.getElementById("pKopiraj");
+  if(pk) pk.onclick = function(){
+    var t = pregledTekst();
+    try{ navigator.clipboard.writeText(t); toast("Pregled kopiran"); }
+    catch(e){ toast("Kopiranje nije uspjelo"); }
+  };
+  el.querySelectorAll("[data-u]").forEach(function(b){
+    b.onclick = function(){ ucenik = (ucenik === b.dataset.u) ? "" : b.dataset.u; crtajUcenici(); };
+  });
+  el.querySelectorAll("[data-vise]").forEach(function(b){
+    b.onclick = function(){ sveOznake = !sveOznake; crtajUcenici(); };
+  });
+  el.querySelectorAll("[data-oz]").forEach(function(b){
+    b.onclick = function(){
+      var ime = b.dataset.ime, k = b.dataset.oz, o = ozn(k);
+      var e = danasnjaEv(otvoreno);
+      e[ime] = e[ime] || {};
+      if(o.brojac) e[ime][k] = (e[ime][k] || 0) + 1;
+      else if(e[ime][k]) delete e[ime][k];
+      else e[ime][k] = 1;
+      ocisti(e[ime], e, ime);
+      pisi("skola-evidencija", E);
+      crtajUcenici();
+    };
+  });
+  el.querySelectorAll("[data-skini]").forEach(function(b){
+    b.onclick = function(){
+      var ime = b.dataset.ime, k = b.dataset.skini, e = danasnjaEv(otvoreno);
+      if(e[ime] && e[ime][k]){ e[ime][k]--; ocisti(e[ime], e, ime); }
+      pisi("skola-evidencija", E);
+      crtajUcenici();
+    };
+  });
+  el.querySelectorAll("[data-nac]").forEach(function(b){
+    b.onclick = function(){
+      if(b.dataset.nac === "rucno") RUCNO[otvoreno] = 1; else delete RUCNO[otvoreno];
+      pisi("skola-rucno", RUCNO); crtajUcenici(); crtaj(); crtajZivo();
+    };
+  });
+  el.querySelectorAll("[data-otk]").forEach(function(b){
+    b.onclick = function(){
+      delete PRESK[b.dataset.otk];
+      pisi("skola-preskoceni", PRESK); crtajUcenici(); crtaj(); crtajZivo();
+    };
+  });
+  el.querySelectorAll("[data-pm]").forEach(function(b){
+    b.onclick = function(){
+      PM[otvoreno] = pomakZa(otvoreno) + (+b.dataset.pm);
+      pisi("skola-pomak", PM); crtajUcenici(); crtaj(); crtajZivo();
+    };
+  });
+  var gu = document.getElementById("gUredi");
+  if(gu) gu.onclick = function(){ uredi = true; crtajUcenici(); };
+  el.querySelectorAll("[data-odrzan]").forEach(function(b){
+    b.onclick = function(){
+      NAP[otvoreno] = NAP[otvoreno] || {};
+      NAP[otvoreno][b.dataset.odrzan] = kljuc(new Date());
+      pisi("skola-napredak", NAP); crtajUcenici(); crtajZivo();
+    };
+  });
+  el.querySelectorAll("[data-ponisti]").forEach(function(b){
+    b.onclick = function(){
+      if(NAP[otvoreno]) delete NAP[otvoreno][b.dataset.ponisti];
+      pisi("skola-napredak", NAP); crtajUcenici(); crtajZivo();
+    };
+  });
+  el.querySelectorAll("[data-nap]").forEach(function(inp){
+    inp.oninput = function(){
+      var k = bkljuc(inp.dataset.nap);
+      if(inp.value.trim()) BU[k] = inp.value.trim(); else delete BU[k];
+      pisi("skola-ubiljeske", BU); pisi("skola-plan", P); pisi("skola-napredak", NAP); pisi("skola-moj", MOJ);
+    };
+  });
+}
+
+/* ---------- prepis dana za dnevnik ---------- */
+function prepisDana(dk){
+  var dat = datumDana(dk);
+  var ime = DANI.filter(function(x){ return x[0] === dk; })[0][1];
+  var t = ime + ", " + lijepDatum(kljuc(dat)) + "\n";
+  if(neradan(dat)) return t + "Neradan dan — " + neradan(dat) + "\n";
+
+  var lista = casoviDana(dk, dat);
+  if(!lista.length) return t + "Nema časova.\n";
+
+  var brojac = {};
+  lista.forEach(function(x){
+    var idx = x.br - 1;
+    t += "\n" + x.br + ". čas · " + x.ime + " · " + x.od + "–" + x["do"] + "\n";
+    if(preskocen(dat, x.ime, idx)){ t += "   nije održan\n"; return; }
+
+    var j = jedinicaCasa(x.ime, dat, idx);
+    if(!j){ var k = brojac[x.ime] || 0; brojac[x.ime] = k + 1; j = jedinicaZa(x.ime, k); }
+    t += "   " + (j ? opisJedinice(j) : "(nema plana)") + "\n";
+
+    var ev = (E[kljuc(dat)] && E[kljuc(dat)][x.ime]) || {};
+    var odsutni = [], biljeske = [];
+    (U[x.ime] || []).forEach(function(u){
+      var z = ev[u];
+      if(!z) return;
+      if(z.ods){ odsutni.push(u); return; }
+      var oz = OZNAKE.filter(function(o){ return o.k !== "ods" && z[o.k]; })
+                     .map(function(o){ return o.kratko + (o.brojac && z[o.k] > 1 ? " " + z[o.k] : ""); });
+      if(oz.length) biljeske.push(u + " (" + oz.join(", ") + ")");
+    });
+    t += "   odsutni: " + (odsutni.length ? odsutni.join(", ") : "nema") + "\n";
+    if(biljeske.length) t += "   napomene: " + biljeske.join("; ") + "\n";
+  });
+  return t;
+}
+
+/* ---------- unos rasporeda ---------- */
+var danU = "";
+var danPrikaz = "", danRucno = false;
+function svaOdjeljenja(){
+  var set = {};
+  DANI.forEach(function(d){ R[d[0]].casovi.forEach(function(c){ if(c) set[c] = 1; }); });
+  Object.keys(U).forEach(function(k){ set[k] = 1; });
+  return Object.keys(set).sort();
+}
+function okreniSmjene(){
+  var n = 0;
+  DANI.forEach(function(d){
+    var sm = R[d[0]].smena;
+    if(sm === "I"){ R[d[0]].smena = "II"; n++; }
+    else if(sm === "II"){ R[d[0]].smena = "I"; n++; }
+  });
+  if(!n){ toast("Nema dana u I ili II smjeni"); return; }
+  pisi("skola-v2", R);
+  crtaj(); crtajZivo();
+  if(edit) crtajIzmjenu();
+  crtajRotaciju();
+  toast(n + (n === 1 ? " dan okrenut" : " dana okrenuto") + " — stisni opet da vratiš");
+}
+
+function crtajIzmjenu(){
+  var el = document.getElementById("uredjivac");
+  if(!edit){ el.innerHTML = ""; return; }
+  if(!danU){
+    var i = idxDana(new Date());
+    danU = DANI[i >= 0 ? i : 0][0];
+  }
+  var d = R[danU], b = BELLS[d.smena] || [], poznata = svaOdjeljenja();
+  var okrece = ROT.on && (d.smena === "I" || d.smena === "II");
+
+  var h = '<div class="ured2"><div class="dtabs">' + DANI.map(function(x){
+      var n = casoviDana(x[0]).length;
+      return '<button data-du="'+x[0]+'" aria-selected="'+(x[0]===danU)+'">'+x[2]+
+             '<span class="mali">'+(n?n+" č.":"—")+'</span></button>';
+    }).join("") + '</div>' +
+    '<div class="smred">' + [["I","I smena"],["M","Međusmena"],["II","II smena"],["","Nema nastave"]].map(function(v){
+      return '<button data-sme="'+v[0]+'" aria-selected="'+(v[0]===d.smena)+'">'+v[1]+'</button>';
+    }).join("") + '</div>';
+
+  if(!b.length){
+    h += '<div class="udno"><div class="upom">Za ovaj dan nema nastave. Izaberi smjenu iznad da upišeš časove.</div>' +
+         '<button class="btn on" id="uGotovo">Gotovo</button></div></div>';
+    el.innerHTML = h; veziIzmjenu(el); return;
+  }
+
+  h += '<div class="credovi">' + b.map(function(bl, i){
+      return '<div class="cred"><span class="brv"><b>'+(i+1)+'. čas</b>'+bl[0]+'–'+bl[1]+'</span>' +
+        '<input list="odjLista" data-c="'+i+'" value="'+esc(d.casovi[i]||"")+'" placeholder="prazno" autocapitalize="characters">' +
+        (d.casovi[i] ? '<button class="obrisi" data-brisi="'+i+'" title="Isprazni">×</button>' : '') +
+      '</div>';
+    }).join("") + '</div>';
+
+  if(poznata.length)
+    h += '<div class="brzi">' + poznata.map(function(o){
+      return '<button data-brzo="'+esc(o)+'">'+esc(o)+'</button>';
+    }).join("") + '</div>';
+
+  h += '<div class="udno">' +
+       '<button class="btn" id="uPrethodni">‹ ' + DANI[(DANI.map(function(x){return x[0];}).indexOf(danU)+4)%5][2] + '</button>' +
+       '<button class="btn" id="uSljedeci">' + DANI[(DANI.map(function(x){return x[0];}).indexOf(danU)+1)%5][2] + ' ›</button>' +
+       '<button class="btn" id="uOkreni">Okreni smjene</button>' +
+       '<button class="btn on" id="uGotovo" style="margin-left:auto">Gotovo</button>' +
+       '<div class="upom">Upiši odjeljenje ili ga dodirni ispod. Prazan red znači da tad nemaš čas.' +
+       (okrece ? ' Smjene se mijenjaju sedmično — upiši osnovnu smjenu, obrtanje ide samo.' : '') + '</div></div></div>' +
+       '<datalist id="odjLista">' + poznata.map(function(o){ return '<option value="'+esc(o)+'">'; }).join("") + '</datalist>';
+
+  el.innerHTML = h;
+  veziIzmjenu(el);
+}
+function osvjeziIzmjenu(el){
+  el.querySelectorAll("[data-du]").forEach(function(b){
+    var n = casoviDana(b.dataset.du).length, m = b.querySelector(".mali");
+    if(m) m.textContent = n ? n + " č." : "—";
+  });
+  el.querySelectorAll("[data-c]").forEach(function(inp){
+    var red = inp.parentNode, ima = red.querySelector("[data-brisi]");
+    if(inp.value.trim() && !ima){
+      var b = document.createElement("button");
+      b.className = "obrisi"; b.setAttribute("data-brisi", inp.dataset.c);
+      b.title = "Isprazni"; b.textContent = "×";
+      b.onclick = function(){
+        R[danU].casovi[+b.getAttribute("data-brisi")] = "";
+        pisi("skola-v2", R); crtajIzmjenu(); crtajZivo();
+      };
+      red.appendChild(b);
+    } else if(!inp.value.trim() && ima) ima.remove();
+  });
+  var brzi = el.querySelector(".brzi");
+  if(brzi){
+    brzi.innerHTML = svaOdjeljenja().map(function(o){
+      return '<button data-brzo="'+esc(o)+'">'+esc(o)+'</button>';
+    }).join("");
+    veziBrze(el, brzi);
+  }
+}
+function veziBrze(el, gdje){
+  gdje.querySelectorAll("[data-brzo]").forEach(function(b){
+    b.onclick = function(){
+      var polja = el.querySelectorAll("[data-c]");
+      for(var i=0;i<polja.length;i++) if(!polja[i].value){
+        R[danU].casovi[+polja[i].dataset.c] = b.dataset.brzo;
+        pisi("skola-v2", R); crtajIzmjenu(); crtajZivo(); return;
+      }
+      toast("Svi časovi tog dana su popunjeni");
+    };
+  });
+}
+
+function veziIzmjenu(el){
+  el.querySelectorAll("[data-du]").forEach(function(b){
+    b.onclick = function(){ danU = b.dataset.du; crtajIzmjenu(); };
+  });
+  el.querySelectorAll("[data-sme]").forEach(function(b){
+    b.onclick = function(){
+      var nova = b.dataset.sme, duz = BELLS[nova] ? BELLS[nova].length : 0, viska = 0;
+      for(var i=duz;i<MAXC;i++) if(R[danU].casovi[i]) viska++;
+      R[danU].smena = nova;
+      pisi("skola-v2", R); crtajIzmjenu(); crtajZivo();
+      if(viska) toast(viska + (viska===1?" čas je":" časa su") + " van ove smjene i ne prikazuje se");
+    };
+  });
+  el.querySelectorAll("[data-c]").forEach(function(inp){
+    inp.onchange = function(){
+      R[danU].casovi[+inp.dataset.c] = inp.value.trim();
+      pisi("skola-v2", R);
+      osvjeziIzmjenu(el);   /* bez ponovnog crtanja, da tastatura ostane */
+      crtajZivo();
+    };
+  });
+  el.querySelectorAll("[data-brisi]").forEach(function(b){
+    b.onclick = function(){
+      R[danU].casovi[+b.dataset.brisi] = "";
+      pisi("skola-v2", R); crtajIzmjenu(); crtajZivo();
+    };
+  });
+  el.querySelectorAll("[data-brzo]").forEach(function(b){
+    b.onclick = function(){
+      var polja = el.querySelectorAll("[data-c]");
+      for(var i=0;i<polja.length;i++) if(!polja[i].value){
+        R[danU].casovi[+polja[i].dataset.c] = b.dataset.brzo;
+        pisi("skola-v2", R); crtajIzmjenu(); crtajZivo(); return;
+      }
+      toast("Svi časovi tog dana su popunjeni");
+    };
+  });
+  var kljucevi = DANI.map(function(x){ return x[0]; });
+  var pr = document.getElementById("uPrethodni");
+  if(pr) pr.onclick = function(){ danU = kljucevi[(kljucevi.indexOf(danU)+4)%5]; crtajIzmjenu(); };
+  var sl = document.getElementById("uSljedeci");
+  if(sl) sl.onclick = function(){ danU = kljucevi[(kljucevi.indexOf(danU)+1)%5]; crtajIzmjenu(); };
+  var ok2 = document.getElementById("uOkreni");
+  if(ok2) ok2.onclick = okreniSmjene;
+  var go = document.getElementById("uGotovo");
+  if(go) go.onclick = function(){ document.getElementById("btnEdit").onclick(); };
+}
+
+/* ---------- nedelja ---------- */
+function crtaj(){
+  var now = new Date();
+  var i = idxDana(now);
+  var dnes = i >= 0 ? DANI[i][0] : "";
+  var stopDanas = !!neradan(now);
+  var t = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+
+  var h = '<thead><tr><th></th>';
+  DANI.forEach(function(d){
+    h += '<th class="'+(d[0]===dnes?"dnes":"")+'"><div class="dan">'+d[1]+'</div>' +
+         '<div class="sm">'+(d[0]===dnes&&stopDanas ? "neradan dan" :
+             SMENA[smenaNa(d[0], datumDana(d[0]))] + (skraceni(datumDana(d[0])) ? " · skraćeni" : ""))+'</div></th>';
+  });
+  h += '</tr></thead><tbody>';
+
+  var brojacT = {};
+  var redova = najviseCasova();
+  for(var r=0;r<redova;r++){
+    h += '<tr><th>'+(r+1)+'.</th>';
+    DANI.forEach(function(d){
+      var b = zvonaZa(smenaNa(d[0], datumDana(d[0])), datumDana(d[0])), bl = b ? b[r] : null;
+      var ime = R[d[0]].casovi[r] || "";
+      var dan = (d[0] === dnes);
+      var sada = dan && !stopDanas && ime && bl && t >= sek(bl[0]) && t < sek(bl[1]);
+      var kl = (dan?"dnes":"") + (dan && stopDanas ? " stop" : "");
+      var jedT = "";
+      if(ime && !(dan && stopDanas) && !neradan(datumDana(d[0]))){
+        var jx = jedinicaCasa(ime, datumDana(d[0]), r);
+        if(!jx && dan){ var kT = brojacT[ime] || 0; brojacT[ime] = kT + 1; jx = jedinicaZa(ime, kT); }
+        jedT = opisJedinice(jx, 52);
+      }
+      h += '<td class="'+kl+'"><div class="cell '+(ime?"pun":"prazno")+(sada?" sada":"")+'"'+(ime?' data-odj="'+esc(ime)+'"':'')+'>' +
+           (ime ? '<div class="ime">'+esc(ime)+(B[ime]?' <span class="tacka">•</span>':'')+'</div>' : '') +
+           '<div class="vr">'+(bl ? bl[0]+"–"+bl[1] : "—")+'</div>' +
+           (jedT ? '<div class="jed">'+esc(jedT)+'</div>' : '') + '</div></td>';
+    });
+    h += '</tr>';
+  }
+  document.getElementById("tab").innerHTML = h + '</tbody>';
+
+  if(!danRucno) danPrikaz = dnes || DANI[0][0];
+  if(danPrikaz !== "svi" && !DANI.some(function(x){ return x[0] === danPrikaz; })) danPrikaz = DANI[0][0];
+
+  var m = '<div class="dantabs">' + DANI.map(function(x){
+      var n = casoviDana(x[0], datumDana(x[0])).length;
+      return '<button data-dp="' + x[0] + '" aria-selected="' + (x[0] === danPrikaz) + '"' +
+        (x[0] === dnes ? ' class="danas"' : '') + '>' + x[2] +
+        '<span class="mali">' + (n ? n : "—") + '</span></button>';
+    }).join("") +
+    '<button data-dp="svi" aria-selected="' + (danPrikaz === "svi") + '">Sve<span class="mali">' +
+      DANI.reduce(function(a, x){ return a + casoviDana(x[0], datumDana(x[0])).length; }, 0) + '</span></button>' +
+    '</div>';
+
+  DANI.forEach(function(d){
+    if(danPrikaz !== "svi" && d[0] !== danPrikaz) return;
+    var lista = casoviDana(d[0], datumDana(d[0]));
+    var dan = (d[0] === dnes), stop = dan && stopDanas;
+    m += '<div class="dcard '+(dan?"dnes":"")+(stop?" stop":"")+'"><div class="dhead"><b>'+d[1]+'</b>' +
+         '<span>'+(stop ? "neradan dan" :
+           SMENA[smenaNa(d[0], datumDana(d[0]))] +
+           (skraceni(datumDana(d[0])) ? " · skraćeni" : "") +
+           (lista.length ? " · "+lista[0].od+"–"+lista[lista.length-1]["do"] : ""))+'</span>' +
+           (lista.length ? '<button class="prepis" data-prepis="'+d[0]+'">prepis</button>' : '') + '</div>';
+    var brojac = {}, redovi = [], prethodni = null;
+    lista.forEach(function(x){
+      if(prethodni){
+        var pauza = x.a - prethodni.z;
+        var prazno = x.br - prethodni.br - 1;
+        if(prazno > 0){
+          redovi.push('<li class="pauza"><i>'+prethodni["do"]+'</i><em></em><b>prozor</b>' +
+            '<span class="pauza-tr">'+prazno+(prazno===1?" čas":" časa")+' · '+Math.round(pauza/60)+' min</span></li>');
+        } else if(pauza >= 15*60){
+          var sadaP = (dan && !stop && t >= prethodni.z && t < x.a);
+          redovi.push('<li class="pauza'+(sadaP?" sada":"")+'"><i>'+prethodni["do"]+'</i><em></em><b>veliki odmor</b>' +
+            '<span class="pauza-tr">'+Math.round(pauza/60)+' min</span>' +
+            (sadaP ? '<span class="ostalo" id="liOstalo"></span>' : '') + '</li>');
+        }
+      }
+      prethodni = x;
+
+      var sada = (dan && !stop && t >= x.a && t < x.z);
+      var jed = "";
+      if(!stop && !neradan(datumDana(d[0]))){
+        var jy = jedinicaCasa(x.ime, datumDana(d[0]), x.br - 1);
+        if(!jy && dan){ var k = brojac[x.ime] || 0; brojac[x.ime] = k + 1; jy = jedinicaZa(x.ime, k); }
+        jed = opisJedinice(jy);
+      }
+      redovi.push('<li'+(sada?' class="sada"':'')+' data-odj="'+esc(x.ime)+'"><em>'+x.br+'.</em><b>'+esc(x.ime)+
+        (B[x.ime]?' <span class="tacka">•</span>':'')+'</b><i>'+x.od+'</i>' +
+        (sada ? '<span class="ostalo" id="liOstalo"></span>' : '') +
+        (jed ? '<span class="jed">'+esc(jed)+'</span>' : '') + '</li>');
+    });
+
+    m += lista.length ? '<ol>' + redovi.join("") + '</ol>' : '<div class="nis">nema časova</div>';
+    m += '</div>';
+  });
+
+  document.getElementById("mob").innerHTML = m;
+  document.querySelectorAll("#mob [data-prepis]").forEach(function(b){
+    b.onclick = function(ev2){
+      ev2.stopPropagation();
+      var t = prepisDana(b.dataset.prepis);
+      try{ navigator.clipboard.writeText(t).then(function(){ toast("Prepis kopiran — nalijepi u dnevnik"); },
+                                                 function(){ toast("Kopiranje nije uspjelo"); }); }
+      catch(e){ toast("Kopiranje nije uspjelo"); }
+    };
+  });
+  document.querySelectorAll("#mob [data-dp]").forEach(function(b){
+    b.onclick = function(){
+      danPrikaz = b.dataset.dp;
+      danRucno = (danPrikaz !== dnes);
+      crtaj();
+    };
+  });
+
+  var uk = 0, po = DANI.map(function(d){ var n = casoviDana(d[0]).length; uk += n; return d[2]+" "+n; });
+  document.getElementById("zbir").innerHTML =
+    '<div><b>'+uk+'</b> časova nedeljno</div>' +
+    '<div class="zakcije"><button id="kopSedmicu">kopiraj</button><button id="btnPrint">štampaj</button></div>';
+  var bp = document.getElementById("btnPrint");
+  if(bp) bp.onclick = function(){ window.print(); };
+  var ks = document.getElementById("kopSedmicu");
+  if(ks) ks.onclick = function(){
+    var t = (MOJ.ime ? MOJ.ime + " — " : "") + "raspored časova\n";
+    DANI.forEach(function(d){
+      var l = casoviDana(d[0], datumDana(d[0]));
+      t += d[1] + ": " + (l.length ? l.map(function(x){ return x.br + ". " + x.ime + " " + x.od; }).join(", ") : "slobodno") + "\n";
+    });
+    try{ navigator.clipboard.writeText(t); toast("Raspored kopiran"); }
+    catch(e){ toast("Kopiranje nije uspjelo"); }
+  };
+
+  var sm = (dnes && !stopDanas) ? smenaNa(dnes, now) : "";
+  var skr = skraceni(now);
+  var ZI = zvonaZa("I", now), ZM = zvonaZa("M", now), ZII = zvonaZa("II", now);
+  var z = '<tr><th>Čas</th><th>I smena</th><th>Međusmena</th><th>II smena</th></tr>';
+  for(var j=0;j<najviseCasova();j++){
+    var td = sm ? zvonaZa(sm, now) : null;
+    var akt = td && td[j] && t >= sek(td[j][0]) && t < sek(td[j][1]);
+    z += '<tr class="'+(akt?"aktivan":"")+'"><td>'+(j+1)+'.</td>' +
+         '<td>'+(ZI[j] ? ZI[j][0]+"–"+ZI[j][1] : "")+'</td>' +
+         '<td>'+(ZM[j] ? ZM[j][0]+"–"+ZM[j][1] : "")+'</td>' +
+         '<td>'+(ZII[j] ? ZII[j][0]+"–"+ZII[j][1] : "")+'</td></tr>';
+  }
+  if(skr) z += '<tr><td colspan="4" style="font-family:var(--sans);font-size:12.5px;color:var(--odmor);font-weight:700">Danas su skraćeni časovi — 30 minuta</td></tr>';
+  document.getElementById("zvona").innerHTML = z;
+
+  crtajNerad();
+  crtajZadatke();
+  crtajPlanove();
+  stanjeKopije();
+
+  document.querySelectorAll("#tab [data-odj], #mob [data-odj]").forEach(function(el){
+    el.onclick = function(){ otvori(el.dataset.odj); };
+  });
+}
+
+/* ---------- zadaci po datumu ---------- */
+function zadaciNa(d){ return ZAD[kljuc(d)] || []; }
+function crtajZadatke(){
+  var el = document.getElementById("zaLista");
+  if(!el) return;
+  var danas = kljuc(new Date());
+  var kl = Object.keys(ZAD).filter(function(k){ return k >= danas && ZAD[k].length; }).sort();
+  el.innerHTML = kl.length
+    ? '<ul class="nlista">' + kl.map(function(k){
+        return ZAD[k].map(function(t, i){
+          return '<li><b>' + lijepDatum(k) + (k === danas ? " · danas" : "") + '</b><span>' + esc(t) + '</span>' +
+            '<button data-zbrisi="' + k + '" data-zi="' + i + '" title="Ukloni">×</button></li>';
+        }).join("");
+      }).join("") + '</ul>'
+    : '<div class="prazno-nap">Nema zadataka. Upiši šta ti treba za neki dan — iskoči ti na vrhu tog jutra.</div>';
+  el.querySelectorAll("[data-zbrisi]").forEach(function(b){
+    b.onclick = function(){
+      var k = b.dataset.zbrisi;
+      if(ZAD[k]){ ZAD[k].splice(+b.dataset.zi, 1); if(!ZAD[k].length) delete ZAD[k]; }
+      pisi("skola-zadaci", ZAD); crtajZadatke(); crtajZivo();
+    };
+  });
+}
+document.getElementById("zaDodaj").onclick = function(){
+  var d = document.getElementById("zaDatum").value;
+  var t = document.getElementById("zaTekst").value.trim();
+  if(!d){ toast("Izaberi datum"); return; }
+  if(!t){ toast("Upiši šta treba"); return; }
+  ZAD[d] = ZAD[d] || [];
+  ZAD[d].push(t);
+  pisi("skola-zadaci", ZAD);
+  document.getElementById("zaTekst").value = "";
+  crtajZadatke(); crtajZivo();
+  toast("Upisano za " + lijepDatum(d));
+};
+
+/* ---------- planovi gradiva ---------- */
+var planUredi = "", planPregled = null;
+function sviRazredi(){
+  var set = {};
+  DANI.forEach(function(d){ R[d[0]].casovi.forEach(function(c){ if(c) set[razred(c)] = 1; }); });
+  Object.keys(P).forEach(function(k){ set[k] = 1; });
+  return Object.keys(set).sort();
+}
+function crtajPlanove(){
+  var el = document.getElementById("pLista");
+  if(!el) return;
+  var raz = sviRazredi();
+
+  if(!raz.length){
+    el.innerHTML = '<div class="prazno-nap">Prvo unesi raspored — razredi se pokupe iz njega.</div>';
+    return;
+  }
+  if(planUredi && planPregled){
+    var poMj = {}, redom = [];
+    planPregled.forEach(function(j){
+      var k = j.m || "bez mjeseca";
+      if(!poMj[k]){ poMj[k] = 0; redom.push(k); }
+      poMj[k]++;
+    });
+    var bezTipa = planPregled.filter(function(j){ return !j.t; }).length;
+    el.innerHTML =
+      '<div class="uhead"><b>Prepoznato ' + planPregled.length + ' časova</b></div>' +
+      '<div class="upom" style="margin:0 0 9px">' +
+        redom.map(function(k){ return esc(k) + " " + poMj[k]; }).join(" · ") +
+        (bezTipa ? ' · <span style="color:var(--odmor)">' + bezTipa + ' bez tipa časa</span>' : '') +
+      '</div>' +
+      '<ul class="pregled" style="max-height:340px;overflow:auto">' + planPregled.map(function(j, i){
+        return '<li><span class="zbir2" style="min-width:22px">'+(i+1)+'.</span>' +
+          '<span class="ime" style="flex:1 1 auto;font-weight:500">'+esc(j.n)+'</span>' +
+          '<span class="oz nula">'+esc(j.t ? tipRijec(j.t) : "—")+'</span></li>';
+      }).join("") + '</ul>' +
+      '<div class="ured"><button class="btn on" id="pPotvrdi">Sačuvaj plan</button>' +
+      '<button class="btn" id="pNazad">Nazad na tekst</button></div>' +
+      '<div class="upom">Provjeri redoslijed i tipove. Ako nešto fali, vrati se i dopuni tekst.</div>';
+    document.getElementById("pPotvrdi").onclick = function(){
+      P[planUredi] = planPregled;
+      pisi("skola-plan", P);
+      toast(planPregled.length + " časova upisano za " + planUredi);
+      planUredi = ""; planPregled = null;
+      crtajPlanove(); crtaj(); crtajZivo();
+    };
+    document.getElementById("pNazad").onclick = function(){ planPregled = null; crtajPlanove(); };
+    return;
+  }
+
+  if(planUredi){
+    el.innerHTML =
+      '<div class="uhead"><b>Plan za ' + esc(planUredi) + ' razred</b></div>' +
+      '<textarea class="uspisak" id="pText" style="min-height:240px" placeholder="Nalijepi plan iz Worda ili ukucaj:&#10;SEPTEMBAR&#10;1. Uvodni čas&#10;2-3 Elektrotehnika i mehatronika (O, U)&#10;4. Inicijalni test — provera">' +
+      esc(pisiPlan(P[planUredi] || [])) + '</textarea>' +
+      '<div class="ured"><button class="btn" id="pFajl">Učitaj iz fajla</button>' +
+      '<button class="btn on" id="pPrepoznaj">Prepoznaj</button>' +
+      '<button class="btn" id="pOdustani">Odustani</button>' +
+      '<input type="file" id="pUlaz" accept=".docx,.xlsx,.xlsm,.txt,.md,.csv" multiple hidden></div>' +
+      '<div class="upom">Učitaj svoje planove — Word (.docx), Excel (.xlsx) ili tekst, može i svih devet mjesečnih odjednom; ' +
+      'program sam nađe tabelu, kolone i redne brojeve. Možeš i nalijepiti tekst. Prazan tekst briše plan.</div>';
+
+    document.getElementById("pFajl").onclick = function(){ document.getElementById("pUlaz").click(); };
+    document.getElementById("pUlaz").onchange = function(){
+      var lista = [].slice.call(this.files || []);
+      this.value = "";
+      if(!lista.length) return;
+      lista.sort(function(a, b){ return (a.name || "").localeCompare(b.name || "", "sr", {numeric:true}); });
+      toast("Čitam " + lista.length + (lista.length === 1 ? " fajl…" : " fajla…"));
+      var dijelovi = [];
+      (function sljedeci(i){
+        if(i >= lista.length){
+          var tekst = dijelovi.join("\n");
+          var nova = citajPlan(tekst);
+          if(!nova.length){ toast("U fajlu nisam našao nastavne jedinice"); return; }
+          document.getElementById("pText").value = tekst;
+          planPregled = nova;
+          crtajPlanove();
+          return;
+        }
+        tekstIzFajla(lista[i]).then(function(t){
+          dijelovi.push(t); sljedeci(i + 1);
+        }, function(){
+          toast("Ne mogu pročitati " + (lista[i].name || "fajl"));
+          sljedeci(i + 1);
+        });
+      })(0);
+    };
+    document.getElementById("pPrepoznaj").onclick = function(){
+      var t = document.getElementById("pText").value;
+      if(!t.trim()){
+        delete P[planUredi]; pisi("skola-plan", P);
+        toast("Plan obrisan"); planUredi = ""; crtajPlanove(); crtaj(); crtajZivo(); return;
+      }
+      var nova = citajPlan(t);
+      if(!nova.length){ toast("Nisam prepoznao nijedan čas — provjeri tekst"); return; }
+      planPregled = nova; crtajPlanove();
+    };
+    document.getElementById("pOdustani").onclick = function(){ planUredi = ""; planPregled = null; crtajPlanove(); };
+    return;
+  }
+
+  el.innerHTML = '<ul class="nlista">' + raz.map(function(r){
+    var pl = P[r] || [];
+    var odj = [], set = {};
+    DANI.forEach(function(d){ R[d[0]].casovi.forEach(function(c){ if(c && razred(c) === r && !set[c]){ set[c] = 1; odj.push(c); } }); });
+    var stanje2 = odj.map(function(o){ return o + " " + Object.keys(odradjeno(o)).length + "/" + pl.length; }).join(" · ");
+    return '<li style="flex-wrap:wrap"><b>' + esc(r) + ' razred</b>' +
+      '<span>' + (pl.length ? pl.length + " časova" : "nema plana") + '</span>' +
+      '<button data-plan="' + esc(r) + '" style="margin-left:auto;border:0;background:none;color:var(--cas);font:inherit;font-weight:700;cursor:pointer">' +
+      (pl.length ? "uredi" : "unesi plan") + '</button>' +
+      (pl.length && stanje2 ? '<span class="cist" style="flex:1 1 100%">' + esc(stanje2) + '</span>' : '') +
+    '</li>';
+  }).join("") + '</ul>';
+
+  el.querySelectorAll("[data-plan]").forEach(function(b){
+    b.onclick = function(){ planUredi = b.dataset.plan; planPregled = null; crtajPlanove(); };
+  });
+}
+
+/* ---------- neradni dani ---------- */
+function crtajNerad(){
+  var danas = kljuc(new Date());
+  var sve = [];
+  Object.keys(N).forEach(function(k){ if(k >= danas) sve.push({d:k, vrsta:"nerad", tekst:N[k]}); });
+  Object.keys(SK).forEach(function(k){ if(k >= danas) sve.push({d:k, vrsta:"skr", tekst:(typeof SK[k]==="string"?SK[k]:"")}); });
+  sve.sort(function(a,b){ return a.d < b.d ? -1 : 1; });
+
+  var el = document.getElementById("nLista");
+  el.innerHTML = sve.length
+    ? '<ul class="nlista">' + sve.map(function(x){
+        return '<li><b>'+lijepDatum(x.d)+'</b>' +
+          '<span class="oz '+(x.vrsta==="skr"?"":"")+'" style="'+(x.vrsta==="skr"?"background:var(--odmor-bg);color:var(--odmor)":"")+'">' +
+          (x.vrsta==="skr"?"skraćeni":"neradan")+'</span>' +
+          '<span>'+esc(x.tekst)+'</span>' +
+          '<button data-brisi="'+x.d+'" data-v="'+x.vrsta+'" title="Ukloni">×</button></li>';
+      }).join("") + '</ul>'
+    : '<div class="prazno-nap">Nema upisanih dana. Neradan dan aplikacija preskače, a skraćeni pomjeri sva zvona na časove od 30 minuta.</div>';
+  el.querySelectorAll("[data-brisi]").forEach(function(b){
+    b.onclick = function(){
+      if(b.dataset.v === "skr"){ delete SK[b.dataset.brisi]; pisi("skola-skraceni", SK); pisi("skola-konf", KONF); pisi("skola-zvona", ZVONA); pisi("skola-rotacija", ROT); }
+      else { delete N[b.dataset.brisi]; pisi("skola-nerad", N); }
+      crtajNerad(); crtajZivo(); crtaj();
+    };
+  });
+}
+document.getElementById("nDodaj").onclick = function(){
+  var d = document.getElementById("nDatum").value;
+  if(!d){ toast("Izaberi datum"); return; }
+  var vrsta = document.getElementById("nVrsta").value;
+  var razlog = document.getElementById("nRazlog").value.trim();
+  if(vrsta === "skr"){
+    SK[d] = razlog || 1;
+    delete N[d];
+    pisi("skola-skraceni", SK); pisi("skola-konf", KONF); pisi("skola-zvona", ZVONA); pisi("skola-rotacija", ROT); pisi("skola-nerad", N);
+    toast(lijepDatum(d) + " — skraćeni časovi");
+  } else {
+    N[d] = razlog || "Neradan dan";
+    delete SK[d];
+    pisi("skola-nerad", N); pisi("skola-skraceni", SK); pisi("skola-konf", KONF); pisi("skola-zvona", ZVONA); pisi("skola-rotacija", ROT);
+    toast(lijepDatum(d) + " — neradan dan");
+  }
+  document.getElementById("nRazlog").value = "";
+  crtajNerad(); crtajZivo(); crtaj();
+};
+
+/* ---------- podsjetnik ---------- */
+function bip(){
+  try{
+    if(!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+    if(ac.state === "suspended") ac.resume();
+    [0, 0.42].forEach(function(kada){
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = "sine"; o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, ac.currentTime + kada);
+      g.gain.exponentialRampToValueAtTime(0.25, ac.currentTime + kada + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + kada + 0.34);
+      o.connect(g); g.connect(ac.destination);
+      o.start(ac.currentTime + kada); o.stop(ac.currentTime + kada + 0.36);
+    });
+  }catch(e){}
+}
+function javi(tekst){
+  bip();
+  toast(tekst);
+  try{
+    if(window.Notification && Notification.permission === "granted")
+      new Notification("Raspored časova", {body:tekst, tag:"cas"});
+  }catch(e){}
+}
+function provjeriNajavu(){
+  if(!zvono) return;
+  var now = new Date();
+  if(neradan(now)) return;
+  var i = idxDana(now); if(i < 0) return;
+  var t = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+  var dan = kljuc(now);
+  casoviDana(DANI[i][0], now).forEach(function(c){
+    var cilj = c.a - NAJAVA*60;
+    var id = dan + "-" + c.br;
+    if(t >= cilj && t < c.a && !javljeno[id]){
+      javljeno[id] = true;
+      javi(NAJAVA + " minuta do " + c.br + ". časa — " + c.ime);
+    }
+  });
+}
+document.getElementById("btnZvono").onclick = function(){
+  zvono = !zvono;
+  this.classList.toggle("on", zvono);
+  if(zvono){
+    bip();
+    try{ if(window.Notification && Notification.permission === "default") Notification.requestPermission(); }catch(e){}
+    toast("Javiću ti " + NAJAVA + " minuta prije svakog časa");
+  } else toast("Podsjetnik isključen");
+  crtajZivo();
+};
+
+/* ---------- podešavanja ---------- */
+function crtajNaslov(){
+  var h = document.getElementById("naslov");
+  var t = MOJ.ime ? "Raspored — " + MOJ.ime : "Moj raspored časova";
+  h.childNodes[0].nodeValue = t;
+}
+document.getElementById("mPocetak").onchange = function(){
+  if(this.value){ POC = this.value; pisi("skola-pocetak", POC); crtaj(); crtajZivo(); if(otvoreno) crtajUcenici(); }
+};
+document.getElementById("mIme").oninput = function(){
+  MOJ.ime = this.value.trim(); pisi("skola-moj", MOJ); crtajNaslov();
+};
+document.getElementById("mPredmet").oninput = function(){
+  MOJ.predmet = this.value.trim(); pisi("skola-moj", MOJ);
+};
+var TEMA = "auto";
+function primijeniTemu(){
+  if(TEMA === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", TEMA);
+  document.querySelectorAll("[data-tema]").forEach(function(b){
+    b.setAttribute("aria-selected", b.dataset.tema === TEMA);
+  });
+}
+document.querySelectorAll("[data-tema]").forEach(function(b){
+  b.onclick = function(){ TEMA = b.dataset.tema; pisi("skola-tema", TEMA); primijeniTemu(); };
+});
+
+function crtajRotaciju(){
+  var el = document.getElementById("rBox");
+  if(!el) return;
+  var sad = obrnutaSedmica(new Date());
+  el.innerHTML =
+    '<div class="nred"><button class="btn" id="rOkreni">Okreni smjene (I ↔ II)</button></div>' +
+    '<div class="upom">Cijeli raspored prelazi u suprotnu smjenu: ' +
+      DANI.map(function(d){
+        var sm = R[d[0]].smena;
+        return d[2] + " " + (sm ? SMENA[sm].replace(" smena","").replace("među","M") : "—");
+      }).join(" · ") + '</div>' +
+    '<div class="prekid" style="margin:12px 0 0">' +
+      [["", "Ne mijenja se"], ["mjesecno", "Mjesečno"], ["sedmicno", "Sedmično"]].map(function(v){
+        var izabran = v[0] ? (ROT.on && ROT.rezim === v[0]) : !ROT.on;
+        return '<button data-rez="' + v[0] + '" aria-selected="' + izabran + '">' + v[1] + '</button>';
+      }).join("") + '</div>' +
+    (ROT.on
+      ? (function(){
+          var pr = sljedecaPromjena(new Date());
+          return '<div class="upom">Ove sedmice važi <b>' + (sad ? "obrnuto" : "kako je upisano") + '</b>: ' +
+            DANI.map(function(d){
+              var sm = smenaNa(d[0], datumDana(d[0]));
+              return d[2] + " " + (sm ? SMENA[sm].replace(" smena","").replace("među","M") : "—");
+            }).join(" · ") +
+            (ROT.rezim === "mjesecno"
+              ? '<br>Sljedeća promjena: <b>ponedjeljak ' + pr.getDate() + "." + (pr.getMonth()+1) + "." + pr.getFullYear() + '.</b>' +
+                ' — mijenja se oko prvog u mjesecu, a ako 1. padne u ponedjeljak ili utorak, onda od tog ponedjeljka.'
+              : '') +
+            '<br><button class="btn" id="rObrni" style="margin-top:8px">Sad je obrnuto</button></div>';
+        })()
+      : '<div class="upom">Uključi ako prva i druga smjena mijenjaju mjesta. ' +
+        'Raspored upisuješ jednom, a aplikacija sama zna koja je smjena na redu.</div>');
+
+  document.getElementById("rOkreni").onclick = okreniSmjene;
+  el.querySelectorAll("[data-rez]").forEach(function(b){
+    b.onclick = function(){
+      var r = b.dataset.rez;
+      ROT.on = !!r;
+      if(r) ROT.rezim = r;
+      if(r === "sedmicno" && !ROT.ref) ROT.ref = kljuc(ponedjeljak(new Date()));
+      pisi("skola-rotacija", ROT);
+      crtajRotaciju(); crtaj(); crtajZivo();
+      if(edit) crtajIzmjenu();
+    };
+  });
+  var ob = document.getElementById("rObrni");
+  if(ob) ob.onclick = function(){
+    if(ROT.rezim === "mjesecno") ROT.pomak = ROT.pomak ? 0 : 1;
+    else {
+      var pn = ponedjeljak(new Date());
+      ROT.ref = kljuc(obrnutaSedmica(new Date()) ? pn : new Date(pn.getTime() - 7*86400000));
+    }
+    pisi("skola-rotacija", ROT);
+    crtajRotaciju(); crtaj(); crtajZivo();
+    if(edit) crtajIzmjenu();
+    toast("Sad važi: " + (obrnutaSedmica(new Date()) ? "obrnuto" : "kako je upisano"));
+  };
+}
+
+var zSmena = "I";
+function crtajZvona(){
+  var el = document.getElementById("zBox");
+  if(!el) return;
+  var z = ZVONA[zSmena], niz = nizZvona(z);
+  var opcije = function(od, doo, izabran, nula){
+    var h = nula ? '<option value="0"'+(izabran===0?" selected":"")+'>'+nula+'</option>' : "";
+    for(var i=od;i<=doo;i++) h += '<option value="'+i+'"'+(i===izabran?" selected":"")+'>'+i+'</option>';
+    return h;
+  };
+  el.innerHTML =
+    '<div class="prekid" style="margin:8px 0 0">' +
+      ["I","M","II"].map(function(k){
+        return '<button data-zs="'+k+'" aria-selected="'+(k===zSmena)+'">'+SMENA[k]+'</button>';
+      }).join("") + '</div>' +
+    '<div class="nred">' +
+      '<label class="polje">Prvi čas u<input type="time" id="zPoc" value="'+esc(z.poc)+'"></label>' +
+      '<label class="polje">Čas<select id="zCas">'+opcije(30,60,z.cas)+'</select></label>' +
+      '<label class="polje">Odmor<select id="zOdmor">'+opcije(3,20,z.odmor)+'</select></label>' +
+    '</div>' +
+    '<div class="nred">' +
+      '<label class="polje">Veliki odmor<select id="zVeliki">'+opcije(5,40,z.veliki)+'</select></label>' +
+      '<label class="polje">poslije<select id="zPoslije">'+opcije(1,z.broj-1,z.poslije,"nema")+'. časa</select></label>' +
+      '<label class="polje">Časova<select id="zBroj">'+opcije(1,MAXC,z.broj)+'</select></label>' +
+    '</div>' +
+    '<div class="upom" style="font-family:var(--mono);font-size:12px;line-height:1.7">' +
+      niz.map(function(x,i){ return (i+1)+". "+x[0]+"–"+x[1]; }).join("  ·  ") + '</div>' +
+    '<div class="ured"><button class="btn" id="zVrati">Vrati školska vremena</button></div>';
+
+  el.querySelectorAll("[data-zs]").forEach(function(b){
+    b.onclick = function(){ zSmena = b.dataset.zs; crtajZvona(); };
+  });
+  var promjena = function(){
+    var z2 = ZVONA[zSmena];
+    var p = document.getElementById("zPoc").value;
+    if(/^\d{1,2}:\d{2}$/.test(p)) z2.poc = p;
+    z2.cas = +document.getElementById("zCas").value;
+    z2.odmor = +document.getElementById("zOdmor").value;
+    z2.veliki = +document.getElementById("zVeliki").value;
+    z2.poslije = +document.getElementById("zPoslije").value;
+    z2.broj = +document.getElementById("zBroj").value;
+    if(z2.poslije >= z2.broj) z2.poslije = 0;
+    pisi("skola-zvona", ZVONA);
+    gradiZvona();
+    crtajZvona(); crtajKonf(); crtaj(); crtajZivo();
+    if(edit) crtajIzmjenu();
+  };
+  ["zPoc","zCas","zOdmor","zVeliki","zPoslije","zBroj"].forEach(function(id){
+    var e2 = document.getElementById(id);
+    if(e2){ e2.onchange = promjena; }
+  });
+  document.getElementById("zVrati").onclick = function(){
+    ZVONA = podrZvona(); pisi("skola-zvona", ZVONA); gradiZvona();
+    crtajZvona(); crtajKonf(); crtaj(); crtajZivo();
+    if(edit) crtajIzmjenu();
+    toast("Vraćena vremena OŠ Vuk Karadžić");
+  };
+}
+
+function crtajKonf(){
+  document.getElementById("kCas").value = KONF.cas;
+  document.getElementById("kMali").value = KONF.mali;
+  document.getElementById("kVeliki").value = KONF.veliki;
+  var z = skrati(BELLS[zSmena] && BELLS[zSmena].length ? BELLS[zSmena] : BELLS.I);
+  if(!z.length){ document.getElementById("kPregled").innerHTML = ""; return; }
+  var prvi = z.slice(0, Math.min(3, z.length)).map(function(x){ return x[0]+"–"+x[1]; });
+  document.getElementById("kPregled").innerHTML =
+    "Na skraćeni dan " + SMENA[zSmena] + " ide ovako: <b>" + prvi[0] + "</b>" +
+    (prvi.length > 1 ? ", " + prvi.slice(1).join(", ") : "") +
+    (z.length > 3 ? " … kraj " + z.length + ". časa u <b>" + z[z.length-1][1] + "</b>." : ".");
+}
+["kCas","kMali","kVeliki"].forEach(function(id){
+  document.getElementById(id).onchange = function(){
+    KONF.cas = +document.getElementById("kCas").value;
+    KONF.mali = +document.getElementById("kMali").value;
+    KONF.veliki = +document.getElementById("kVeliki").value;
+    pisi("skola-konf", KONF);
+    crtajKonf(); crtaj(); crtajZivo();
+  };
+});
+document.getElementById("mReset").onclick = function(){
+  if(!window.confirm("Obrisati SVE — raspored, učenike, evidenciju, bilješke i plan?\n\nOvo se ne može vratiti osim iz sigurnosne kopije.")) return;
+  if(!window.confirm("Sigurno? Posljednja potvrda.")) return;
+  ["skola-v2","skola-nerad","skola-biljeske","skola-ucenici","skola-evidencija",
+   "skola-ubiljeske","skola-plan","skola-napredak","skola-moj","skola-skraceni","skola-konf","skola-zvona","skola-rotacija","skola-tema","skola-zadaci","skola-pocetak","skola-pomak","skola-rucno","skola-preskoceni"].forEach(function(k){
+    try{ window.localStorage.removeItem(k); }catch(e){}
+  });
+  window.location.reload();
+};
+
+/* ---------- sigurnosna kopija ---------- */
+function stanjeKopije(){
+  var n = Object.keys(N).length, b = Object.keys(B).length;
+  var u = 0; Object.keys(U).forEach(function(k){ u += U[k].length; });
+  document.getElementById("kStanje").textContent =
+    "U kopiju ide: raspored za 5 dana, " + n + " neradnih dana, " + b + " bilježaka, " +
+    u + " učenika, plan gradiva i sva evidencija.";
+}
+document.getElementById("kSnimi").onclick = function(){
+  var d = new Date();
+  var paket = {v:2, snimljeno:d.toISOString(), raspored:R, zvona:ZVONA, rotacija:ROT, zadaci:ZAD, pocetak:POC, pomak:PM, rucno:RUCNO, preskoceni:PRESK, nerad:N, skraceni:SK, konf:KONF, biljeske:B, ucenici:U, evidencija:E, ubiljeske:BU, plan:P, napredak:NAP, moj:MOJ};
+  try{
+    var url = URL.createObjectURL(new Blob([JSON.stringify(paket, null, 1)], {type:"application/json"}));
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "raspored-skola-" + dva(d.getDate()) + "." + dva(d.getMonth()+1) + "." + d.getFullYear() + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    toast("Kopija snimljena — čuvaj je na Drive ili pošalji sebi");
+  }catch(e){ toast("Ovaj brauzer ne da da snimi fajl"); }
+};
+function preuzmi(ime, sadrzaj, tip){
+  try{
+    var url = URL.createObjectURL(new Blob([sadrzaj], {type: tip}));
+    var a = document.createElement("a");
+    a.href = url; a.download = ime;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    return true;
+  }catch(e){ return false; }
+}
+document.getElementById("kCsv").onclick = function(){
+  var red = ["datum;odeljenje;ucenik;oznaka;broj"];
+  Object.keys(E).sort().forEach(function(d){
+    Object.keys(E[d] || {}).sort().forEach(function(o){
+      Object.keys(E[d][o] || {}).forEach(function(i){
+        var z = E[d][o][i];
+        OZNAKE.forEach(function(oz){
+          if(z[oz.k]) red.push([d, o, i.replace(/;/g,","), oz.n, z[oz.k]].join(";"));
+        });
+      });
+    });
+  });
+  if(red.length === 1){ toast("Još nema evidencije za izvoz"); return; }
+  var d2 = new Date();
+  var ok = preuzmi("evidencija-" + dva(d2.getDate()) + "." + dva(d2.getMonth()+1) + "." + d2.getFullYear() + ".csv",
+                   "\ufeff" + red.join("\r\n"), "text/csv;charset=utf-8");
+  toast(ok ? (red.length-1) + " upisa izvezeno" : "Izvoz nije uspio");
+};
+document.getElementById("kVrati").onclick = function(){ document.getElementById("kFajl").click(); };
+document.getElementById("kFajl").onchange = function(){
+  var f = this.files && this.files[0];
+  this.value = "";
+  if(!f) return;
+  var fr = new FileReader();
+  fr.onload = function(){
+    var p;
+    try{ p = JSON.parse(fr.result); }catch(e){ toast("Fajl nije ispravan"); return; }
+    if(!p || !p.raspored || !p.raspored.pon){ toast("U fajlu nema rasporeda"); return; }
+    var kada = p.snimljeno ? new Date(p.snimljeno) : null;
+    var pitanje = "Vratiti sve iz kopije" + (kada ? " od " + dva(kada.getDate())+"."+dva(kada.getMonth()+1)+"."+kada.getFullYear()+"." : "") +
+                  "?\n\nSve što je sad u aplikaciji biće zamijenjeno.";
+    if(!window.confirm(pitanje)) return;
+    DANI.forEach(function(d){
+      var o = p.raspored[d[0]]; if(!o) return;
+      R[d[0]].smena = o.smena || "";
+      for(var i=0;i<MAXC;i++) R[d[0]].casovi[i] = (o.casovi && o.casovi[i]) || "";
+    });
+    N = p.nerad || {};
+    SK = p.skraceni || {};
+    ZAD = p.zadaci || {};
+    POC = p.pocetak || podrPocetak();
+    PM = p.pomak || {};
+    RUCNO = p.rucno || {};
+    PRESK = p.preskoceni || {};
+    if(p.rotacija){
+      ROT.on = !!p.rotacija.on;
+      ROT.rezim = p.rotacija.rezim || (p.rotacija.ref ? "sedmicno" : "mjesecno");
+      ROT.ref = p.rotacija.ref || "";
+      ROT.pomak = p.rotacija.pomak ? 1 : 0;
+    }
+    if(p.zvona) ["I","M","II"].forEach(function(k){
+      if(p.zvona[k]) ["poc","cas","odmor","veliki","poslije","broj"].forEach(function(f){
+        if(p.zvona[k][f] !== undefined && p.zvona[k][f] !== null) ZVONA[k][f] = p.zvona[k][f];
+      });
+    });
+    gradiZvona();
+    if(p.konf){ KONF.cas = Math.max(30, p.konf.cas || 30); KONF.mali = p.konf.mali || 5; KONF.veliki = p.konf.veliki || 20; }
+    B = p.biljeske || {};
+    U = p.ucenici || {};
+    E = p.evidencija || {};
+    BU = p.ubiljeske || {};
+    P = p.plan || {};
+    MOJ = p.moj || {ime:"", predmet:""};
+    NAP = p.napredak || {};
+    pisi("skola-v2", R); pisi("skola-nerad", N); pisi("skola-skraceni", SK); pisi("skola-konf", KONF); pisi("skola-zvona", ZVONA); pisi("skola-rotacija", ROT); pisi("skola-biljeske", B);
+    pisi("skola-ucenici", U); pisi("skola-evidencija", E); pisi("skola-ubiljeske", BU); pisi("skola-plan", P); pisi("skola-napredak", NAP); pisi("skola-moj", MOJ);
+    otvoreno = "";
+    document.getElementById("mIme").value = MOJ.ime || "";
+    document.getElementById("mPredmet").value = MOJ.predmet || "";
+document.getElementById("mPocetak").value = POC || podrPocetak();
+    crtajNaslov(); crtajRotaciju(); crtajZvona(); crtajKonf();
+    crtaj(); crtajZivo(); crtajBilj(); stanjeKopije();
+    toast("Vraćeno iz kopije");
+  };
+  fr.readAsText(f);
+};
+
+/* ---------- ostalo ---------- */
+var tt;
+function toast(t){
+  var el = document.getElementById("toast");
+  el.textContent = t; el.classList.add("on");
+  clearTimeout(tt); tt = setTimeout(function(){ el.classList.remove("on"); }, 2600);
+}
+document.getElementById("btnEdit").onclick = function(){
+  edit = !edit;
+  var b = document.getElementById("btnEdit");
+  b.textContent = edit ? "Gotovo" : "Izmeni";
+  b.classList.toggle("on", edit);
+  document.body.classList.toggle("uredjuje", edit);
+  if(edit){ otvoreno = ""; crtajBilj(); }
+  crtajIzmjenu(); crtaj(); crtajZivo();
+  if(!edit) toast("Sačuvano");
+};
+
+/* ---------- dijeljenje ---------- */
+var VERZIJA = "2.9 · 16.11.2026.";
+document.getElementById("verzija").textContent = "Raspored časova " + VERZIJA;
+
+(function(){
+  var b = document.getElementById("mPodijeli");
+  if(location.protocol !== "http:" && location.protocol !== "https:") return;
+  b.style.display = "";
+  b.onclick = function(){
+    var link = location.href.split("#")[0];
+    var tekst = "Raspored časova — aplikacija za nastavnike. Otvori link na telefonu i stisni Instaliraj:\n" + link;
+    if(navigator.share){
+      navigator.share({title:"Raspored časova", text:tekst, url:link}).catch(function(){});
+    } else if(navigator.clipboard){
+      navigator.clipboard.writeText(tekst).then(function(){ toast("Link kopiran"); },
+                                               function(){ toast("Kopiranje nije uspjelo"); });
+    } else toast(link);
+  };
+})();
+
+/* ---------- instalacija (Android) ---------- */
+var ponuda = null;
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault();
+  ponuda = e;
+  document.getElementById("btnInstal").style.display = "";
+});
+document.getElementById("btnInstal").onclick = function(){
+  if(!ponuda) return;
+  ponuda.prompt();
+  ponuda.userChoice.then(function(izbor){
+    if(izbor.outcome === "accepted"){
+      document.getElementById("btnInstal").style.display = "none";
+      toast("Ikona je na početnom ekranu");
+    }
+    ponuda = null;
+  });
+};
+window.addEventListener("appinstalled", function(){
+  document.getElementById("btnInstal").style.display = "none";
+});
+
+ucitaj();
+document.getElementById("nDatum").value = kljuc(new Date());
+document.getElementById("zaDatum").value = kljuc(new Date());
+document.getElementById("mIme").value = MOJ.ime || "";
+document.getElementById("mPredmet").value = MOJ.predmet || "";
+document.getElementById("mPocetak").value = POC || podrPocetak();
+crtajNaslov();
+primijeniTemu();
+crtajRotaciju();
+crtajZvona();
+crtajKonf();
+crtaj();
+crtajZivo();
+crtajBilj();
+
+var zadnjiMin = -1;
+setInterval(function(){
+  crtajZivo();
+  provjeriNajavu();
+  var m = new Date().getMinutes();
+  if(m !== zadnjiMin){ zadnjiMin = m; if(!edit) crtaj(); }
+}, 1000);
+
+if("serviceWorker" in navigator && location.protocol === "https:"){
+  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
+
+document.addEventListener("visibilitychange", function(){
+  if(!document.hidden){ crtajZivo(); if(!edit) crtaj(); }
+});
+</script>
+</body>
+</html>
