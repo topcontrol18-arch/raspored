@@ -557,6 +557,22 @@ body.zakljucano>header,body.zakljucano>main,body.zakljucano>footer{display:none!
       <input type="file" id="kFajl" accept=".json,application/json" hidden>
     </div>
     <div class="prazno-nap" id="kStanje"></div>
+
+    <div class="uhead" style="margin-top:16px"><b>Kopija na serveru</b></div>
+    <div class="upom" id="kopStanje">—</div>
+    <div id="kopRed">
+      <div class="nred" style="margin-top:9px">
+        <button class="btn" id="kopSalji">Pošalji sada</button>
+        <button class="btn" id="kopVuci">Vrati sa servera</button>
+      </div>
+      <div class="nalogred">
+        <span style="font-size:13.5px;color:var(--ink-2)">Šalji sam poslije izmjena</span>
+        <div class="prekid" id="kopAuto">
+          <button data-a="1">Da</button>
+          <button data-a="0">Ne</button>
+        </div>
+      </div>
+    </div>
   </details>
 
 
@@ -1031,8 +1047,10 @@ function citaj(k, pod){
   try{ var o = JSON.parse(window.localStorage.getItem(k) || "null"); return o || pod; }
   catch(e){ cuvaRadi = false; return (k in memorija) ? memorija[k] : pod; }
 }
+var NESINHRO = {"skola-kopija":1, "skola-kopija-url":1, "skola-nalog":1, "skola-tema":1};
 function pisi(k, v){
   memorija[k] = v;
+  if(!NESINHRO[k] && typeof kopZakazi === "function") kopZakazi();
   try{ window.localStorage.setItem(k, JSON.stringify(v)); }
   catch(e){
     if(cuvaRadi){ cuvaRadi = false; toast("Ovaj brauzer ne čuva izmjene — otvori fajl na drugi način"); }
@@ -1083,6 +1101,8 @@ function ucitaj(){
   P = citaj("skola-plan", {});
   NAP = citaj("skola-napredak", {});
   MOJ = citaj("skola-moj", {ime:"", predmet:""});
+  var kp = citaj("skola-kopija", null);
+  if(kp){ KOP.v = kp.v || 0; KOP.kada = kp.kada || ""; KOP.ur = kp.ur || ""; KOP.auto = kp.auto === 0 ? 0 : 1; }
   NALOG = citaj("skola-nalog", null);
   if(NALOG && !NALOG.hes) NALOG = null;
   Object.keys(E).forEach(function(d){
@@ -2580,9 +2600,14 @@ function stanjeKopije(){
     "U kopiju ide: raspored za 5 dana, " + n + " neradnih dana, " + b + " bilježaka, " +
     u + " učenika, plan gradiva i sva evidencija.";
 }
+function paketPodataka(){
+  return {v:2, snimljeno:new Date().toISOString(), raspored:R, zvona:ZVONA, rotacija:ROT, zadaci:ZAD,
+    pocetak:POC, pomak:PM, rucno:RUCNO, preskoceni:PRESK, nerad:N, skraceni:SK, konf:KONF,
+    biljeske:B, ucenici:U, evidencija:E, ubiljeske:BU, plan:P, napredak:NAP, moj:MOJ};
+}
 document.getElementById("kSnimi").onclick = function(){
   var d = new Date();
-  var paket = {v:2, snimljeno:d.toISOString(), raspored:R, zvona:ZVONA, rotacija:ROT, zadaci:ZAD, pocetak:POC, pomak:PM, rucno:RUCNO, preskoceni:PRESK, nerad:N, skraceni:SK, konf:KONF, biljeske:B, ucenici:U, evidencija:E, ubiljeske:BU, plan:P, napredak:NAP, moj:MOJ};
+  var paket = paketPodataka();
   try{
     var url = URL.createObjectURL(new Blob([JSON.stringify(paket, null, 1)], {type:"application/json"}));
     var a = document.createElement("a");
@@ -2635,6 +2660,13 @@ document.getElementById("kFajl").onchange = function(){
     var pitanje = "Vratiti sve iz kopije" + (kada ? " od " + dva(kada.getDate())+"."+dva(kada.getMonth()+1)+"."+kada.getFullYear()+"." : "") +
                   "?\n\nSve što je sad u aplikaciji biće zamijenjeno.";
     if(!window.confirm(pitanje)) return;
+    primijeniPaket(p);
+    toast("Vraćeno iz kopije");
+  };
+  fr.readAsText(f);
+};
+
+function primijeniPaket(p){
     DANI.forEach(function(d){
       var o = p.raspored[d[0]]; if(!o) return;
       R[d[0]].smena = o.smena || "";
@@ -2675,10 +2707,7 @@ document.getElementById("kFajl").onchange = function(){
 document.getElementById("mPocetak").value = POC || podrPocetak();
     crtajNaslov(); crtajRotaciju(); crtajZvona(); crtajKonf();
     crtaj(); crtajZivo(); crtajBilj(); stanjeKopije();
-    toast("Vraćeno iz kopije");
-  };
-  fr.readAsText(f);
-};
+}
 
 /* ---------- ostalo ---------- */
 var tt;
@@ -2874,6 +2903,7 @@ function crtajBravu(){
   if(bKorak === "izbor")      h += bEkranIzbor();
   else if(bKorak === "nova")  h += bEkranNova();
   else if(bKorak === "ulaz")  h += bEkranUlaz();
+  else if(bKorak === "povratak") h += bEkranPovratak();
   else if(bKorak === "zabor") h += bEkranZabor();
   el.innerHTML = h +
     '<div class="bpotpis">Napravio <a href="https://topcontrol.rs" target="_blank" rel="noopener">Top Control</a> · Novi Pazar</div></div>';
@@ -2917,6 +2947,14 @@ function bEkranNova(){
     '<div class="bnap">Zapiši lozinku negdje. Ne čuva se ni na jednom serveru, pa se ne može vratiti — ' +
     'zaboravljena lozinka znači brisanje podataka na ovom uređaju.</div>';
 }
+function bEkranPovratak(){
+  return '<h2>' + esc(bIme) + '</h2>' +
+    '<p>Već imaš kopiju na serveru. Upiši svoju lozinku i sve se vraća na ovaj uređaj — raspored, učenici, evidencija i plan.</p>' +
+    '<input type="password" id="bL" placeholder="Tvoja lozinka" autocomplete="current-password">' +
+    '<div class="bgresk" id="bG"></div>' +
+    '<button class="bdug" id="bVrati">Prijavi se i vrati podatke</button>' +
+    '<button class="blink" id="bNazad">Nazad na spisak</button>';
+}
 function bEkranUlaz(){
   return '<h2>' + esc(NALOG.ime) + '</h2>' +
     '<p>Unesi lozinku.</p>' +
@@ -2957,20 +2995,27 @@ function veziBravu(){
     if(n){ n.focus(); try{ n.setSelectionRange(pos, pos); }catch(x){} }
   };
   el.querySelectorAll("[data-ime]").forEach(function(b){
-    b.onclick = function(){ bIme = b.dataset.ime; bKorak = "nova"; crtajBravu(); fokusiraj("bL1"); };
+    b.onclick = function(){ izabranoIme(b.dataset.ime); };
   });
   var nema = document.getElementById("bNema");
   if(nema) nema.onclick = function(){
     var ime = window.prompt("Upiši svoje ime i prezime:", "");
     if(!ime || !ime.trim()) return;
-    bIme = ime.trim(); bKorak = "nova"; crtajBravu(); fokusiraj("bL1");
+    izabranoIme(ime.trim());
   };
   var d = document.getElementById("bDalje");
   if(d) d.onclick = function(){
     var v = document.getElementById("bRucno").value.trim();
     if(v.length < 3){ bPoruka("Upiši ime i prezime."); return; }
-    bIme = v; bKorak = "nova"; crtajBravu(); fokusiraj("bL1");
+    izabranoIme(v);
   };
+  var vr = document.getElementById("bVrati");
+  if(vr){
+    vr.onclick = vratiNalog;
+    var lv = document.getElementById("bL");
+    if(lv) lv.onkeydown = function(e){ if(e.key === "Enter") vratiNalog(); };
+    fokusiraj("bL");
+  }
   var sn = document.getElementById("bSnimi");
   if(sn){
     sn.onclick = napraviNalog;
@@ -2997,6 +3042,50 @@ function veziBravu(){
     obrisiSve();
   };
 }
+function izabranoIme(ime){
+  bIme = ime;
+  bKorak = "nova";
+  crtajBravu();
+  fokusiraj("bL1");
+  if(!kopMoze()) return;
+  kopPostoji(ime).then(function(o){
+    if(o && o.ima && bIme === ime && bKorak === "nova"){
+      bKorak = "povratak"; crtajBravu(); fokusiraj("bL");
+    }
+  });
+}
+
+/* povratak na novom uređaju — ime + lozinka vraćaju sve */
+function vratiNalog(){
+  if(bRadi) return;
+  var loz = document.getElementById("bL").value;
+  if(!loz){ bPoruka("Upiši lozinku."); return; }
+  bZauzet(true); bPoruka("Otvaram kopiju…", true);
+  izvediKljuceve(bIme, loz).then(function(k){
+    kljucevi = k;
+    return kopPovuci(true);
+  }).then(function(ok){
+    if(!ok) throw new Error("nema");
+    var so = nasumicno(16);
+    return hesiraj(loz, so).then(function(x){
+      var n = nadjiNastavnika(bIme);
+      NALOG = {ime:bIme, predmet:(n && n.predmet) || (MOJ && MOJ.predmet) || "",
+               alg:x.alg, sol:so, hes:x.hes, trazi:1, spisak:n?1:0};
+      pisi("skola-nalog", NALOG);
+      oznaciSesiju();
+      bZauzet(false);
+      otkljucaj();
+      toast("Podaci vraćeni sa servera");
+    });
+  }).catch(function(){
+    kljucevi = null;
+    bZauzet(false);
+    bPoruka("Lozinka ne otvara kopiju. Pokušaj ponovo.");
+    var e = document.getElementById("bL");
+    if(e){ e.value = ""; e.focus(); }
+  });
+}
+
 function napraviNalog(){
   if(bRadi) return;
   var l1 = document.getElementById("bL1").value, l2 = document.getElementById("bL2").value;
@@ -3013,6 +3102,10 @@ function napraviNalog(){
     oznaciSesiju();
     bZauzet(false);
     otkljucaj();
+    if(kopMoze()) izvediKljuceve(bIme, l1).then(function(k){
+      kljucevi = k;
+      return kopPosalji(false);
+    }).catch(function(){});
   });
 }
 function pokusajUlaz(){
@@ -3022,7 +3115,20 @@ function pokusajUlaz(){
   bZauzet(true); bPoruka("Trenutak…", true);
   provjeriLoz(l, NALOG).then(function(ok){
     bZauzet(false);
-    if(ok){ oznaciSesiju(); otkljucaj(); return; }
+    if(ok){
+      oznaciSesiju();
+      otkljucaj();
+      if(kopMoze()) izvediKljuceve(NALOG.ime, l).then(function(k){
+        kljucevi = k;
+        return kopZovi("/ima", {id:k.id, t:k.tok});
+      }).then(function(o){
+        if(o && o.kod === 200 && +o.d.v > +KOP.v){
+          if(window.confirm("Na serveru postoje noviji podaci" + (o.d.ur ? " sa: " + o.d.ur : "") +
+             ".\n\nPovući ih na ovaj uređaj?")) return kopPovuci(true);
+        }
+      }).catch(function(){});
+      return;
+    }
     bPokusaj++;
     el.value = "";
     bPoruka(bPokusaj >= 3 ? "Pogrešna lozinka. Pokušaja: " + bPokusaj + "." : "Pogrešna lozinka.");
@@ -3041,6 +3147,7 @@ function otkljucaj(){
   pokreni();
 }
 function zakljucaj(){
+  kljucevi = null;
   brisiSesiju();
   window.location.reload();
 }
@@ -3081,6 +3188,27 @@ document.getElementById("nOsvjezi").onclick = function(){
   if(edit) crtajIzmjenu();
   toast("Raspored vraćen sa spiska");
 };
+document.getElementById("kopSalji").onclick = function(){
+  if(!kljucevi){ toast("Prijavi se ponovo da bi se napravio ključ"); return; }
+  toast("Šaljem…");
+  kopPosalji(false).then(function(ok){ if(ok) toast("Kopija je na serveru"); },
+                         function(){ toast("Server nije dostupan"); });
+};
+document.getElementById("kopVuci").onclick = function(){
+  if(!kljucevi){ toast("Prijavi se ponovo da bi se napravio ključ"); return; }
+  if(!window.confirm("Vratiti podatke sa servera?\n\nSve što je sad na ovom uređaju biće zamijenjeno.")) return;
+  kopPovuci(false).then(function(ok){ if(ok) toast("Vraćeno sa servera"); },
+                        function(){ toast("Kopija se ne da otvoriti"); });
+};
+document.querySelectorAll("#kopAuto button").forEach(function(b){
+  b.onclick = function(){
+    KOP.auto = +b.dataset.a;
+    pisi("skola-kopija", KOP);
+    crtajKop();
+    toast(KOP.auto ? "Kopija se šalje sama" : "Kopiju šalješ ručno");
+  };
+});
+
 document.getElementById("nLoz").onclick = function(){
   if(!NALOG){ toast("Nema prijave"); return; }
   var st = window.prompt("Upiši staru lozinku:");
@@ -3100,8 +3228,173 @@ document.getElementById("nLoz").onclick = function(){
     });
   });
 };
+/* ---------- šifrovana kopija na serveru ----------
+   Ključ se izvodi iz imena i lozinke, pa se podaci vrate na bilo kom uređaju.
+   Server čuva samo nečitljiv paket — ni škola ni autor ne mogu ga otvoriti. */
+var KOPIJA_URL = "";
+var KOP = {v:0, kada:"", ur:"", auto:1, zadnja:""};
+var kljucevi = null;      /* {id, tok, kljuc} — samo u memoriji, nikad na disku */
+var kopRadi = false, kopCeka = null, kopIsklj = false;
+
+function kopUrl(){
+  var r = citaj("skola-kopija-url", "");
+  return (r || KOPIJA_URL || "").replace(/\/+$/, "");
+}
+function kopMoze(){
+  return !!(kopUrl() && window.crypto && window.crypto.subtle && window.fetch && window.TextEncoder);
+}
+function ovajUredjaj(){
+  var t = navigator.userAgent || "";
+  if(/iPhone|iPad/i.test(t)) return "iPhone";
+  if(/Android/i.test(t)) return "Android telefon";
+  if(/Mac/i.test(t)) return "Mac";
+  if(/Windows/i.test(t)) return "kompjuter";
+  return "uređaj";
+}
+
+function uB64(bajtovi){
+  var s = "", a = new Uint8Array(bajtovi);
+  for(var i=0;i<a.length;i+=0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i+0x8000));
+  return btoa(s);
+}
+function izB64(t){
+  var b = atob(t), a = new Uint8Array(b.length);
+  for(var i=0;i<b.length;i++) a[i] = b.charCodeAt(i);
+  return a;
+}
+function spoji(a, b){
+  var c = new Uint8Array(a.length + b.length);
+  c.set(a, 0); c.set(b, a.length);
+  return c;
+}
+function heksOd(buf){ return heks(new Uint8Array(buf)); }
+function soImena(ime){
+  return "nastavnik.rs|" + bezKv(ime).replace(/[^a-z0-9]/g, "");
+}
+
+async function izvediKljuceve(ime, loz){
+  var enc = new TextEncoder(), so = soImena(ime), c = window.crypto.subtle;
+  var km = await c.importKey("raw", enc.encode(loz), {name:"PBKDF2"}, false, ["deriveBits"]);
+  var bits = await c.deriveBits({name:"PBKDF2", salt:enc.encode(so), iterations:250000, hash:"SHA-256"}, km, 256);
+  var master = new Uint8Array(bits);
+  var tok = heksOd(await c.digest("SHA-256", spoji(master, enc.encode("|tok"))));
+  var sirovi = await c.digest("SHA-256", spoji(master, enc.encode("|enc")));
+  var kljuc = await c.importKey("raw", sirovi, {name:"AES-GCM"}, false, ["encrypt","decrypt"]);
+  var id = heksOd(await c.digest("SHA-256", enc.encode("id|" + so)));
+  return {id:id, tok:tok, kljuc:kljuc};
+}
+async function idImena(ime){
+  var enc = new TextEncoder();
+  return heksOd(await window.crypto.subtle.digest("SHA-256", enc.encode("id|" + soImena(ime))));
+}
+async function zakljucajPaket(kljuc, tekst){
+  var iv = window.crypto.getRandomValues(new Uint8Array(12));
+  var c = await window.crypto.subtle.encrypt({name:"AES-GCM", iv:iv}, kljuc, new TextEncoder().encode(tekst));
+  return uB64(spoji(iv, new Uint8Array(c)));
+}
+async function otkljucajPaket(kljuc, t){
+  var sve = izB64(t);
+  var c = await window.crypto.subtle.decrypt({name:"AES-GCM", iv:sve.slice(0,12)}, kljuc, sve.slice(12));
+  return new TextDecoder().decode(c);
+}
+async function kopZovi(putanja, telo){
+  var o = await window.fetch(kopUrl() + putanja, {
+    method:"POST", headers:{"content-type":"application/json"},
+    body: JSON.stringify(telo)
+  });
+  var d = null;
+  try{ d = await o.json(); }catch(e){}
+  return {kod:o.status, d:d || {}};
+}
+
+/* postoji li kopija za ovo ime — prije nego se traži lozinka */
+async function kopPostoji(ime){
+  if(!kopMoze()) return null;
+  try{
+    var id = await idImena(ime);
+    var o = await kopZovi("/postoji", {id:id});
+    return o.kod === 200 ? o.d : null;
+  }catch(e){ return null; }
+}
+
+/* povuci i primijeni */
+async function kopPovuci(tiho){
+  if(!kljucevi || !kopMoze()) return false;
+  var o = await kopZovi("/povuci", {id:kljucevi.id, t:kljucevi.tok});
+  if(o.kod === 404){ if(!tiho) toast("Na serveru nema kopije"); return false; }
+  if(o.kod !== 200){ if(!tiho) toast("Server ne da kopiju"); return false; }
+  var tekst = await otkljucajPaket(kljucevi.kljuc, o.d.d);
+  var p = JSON.parse(tekst);
+  if(!p || !p.raspored) throw new Error("paket");
+  kopIsklj = true;
+  try{ primijeniPaket(p); } finally { kopIsklj = false; clearTimeout(kopCeka); }
+  KOP.v = o.d.v; KOP.kada = o.d.kada; KOP.ur = o.d.ur || "";
+  pisi("skola-kopija", KOP);
+  crtajKop();
+  return true;
+}
+
+/* pošalji */
+async function kopPosalji(sila){
+  if(!kljucevi || !kopMoze()) return false;
+  var sifra = await zakljucajPaket(kljucevi.kljuc, JSON.stringify(paketPodataka()));
+  var o = await kopZovi("/posalji", {id:kljucevi.id, t:kljucevi.tok, d:sifra,
+                                     v:KOP.v, ur:ovajUredjaj(), sila: sila ? 1 : 0});
+  if(o.kod === 409){
+    var kada = o.d.kada ? new Date(o.d.kada) : null;
+    var kad = kada ? dva(kada.getDate())+"."+dva(kada.getMonth()+1)+". u "+dva(kada.getHours())+":"+dva(kada.getMinutes()) : "";
+    if(window.confirm("Na serveru postoje noviji podaci" + (o.d.ur ? " sa: " + o.d.ur : "") +
+       (kad ? ", " + kad : "") + ".\n\nPovući ih? (Odustani = zadrži ovo što je ovdje i pregazi server)")){
+      await kopPovuci(true);
+      toast("Povučeno sa servera");
+    } else {
+      KOP.v = o.d.v;
+      return await kopPosalji(true);
+    }
+    return false;
+  }
+  if(o.kod !== 200){ return false; }
+  KOP.v = o.d.v; KOP.kada = o.d.kada; KOP.ur = ovajUredjaj();
+  pisi("skola-kopija", KOP);
+  crtajKop();
+  return true;
+}
+
+/* automatsko slanje poslije izmjena */
+function kopZakazi(){
+  if(!KOP.auto || !kljucevi || !kopMoze() || kopIsklj) return;
+  clearTimeout(kopCeka);
+  kopCeka = setTimeout(function(){
+    if(kopRadi) return kopZakazi();
+    kopRadi = true;
+    kopPosalji(false).catch(function(){}).then(function(){ kopRadi = false; });
+  }, 8000);
+}
+
+function crtajKop(){
+  var el = document.getElementById("kopStanje");
+  if(!el) return;
+  var red = document.getElementById("kopRed");
+  if(!kopMoze()){
+    el.textContent = "Kopija na serveru nije podešena na ovoj adresi.";
+    if(red) red.style.display = "none";
+    return;
+  }
+  if(red) red.style.display = "";
+  if(!KOP.kada) el.textContent = "Još nema kopije na serveru. Pošalji je — pa je vratiš na bilo kom telefonu, samo imenom i lozinkom.";
+  else {
+    var d = new Date(KOP.kada);
+    el.textContent = "Posljednja kopija: " + dva(d.getDate())+"."+dva(d.getMonth()+1)+"."+d.getFullYear()+". u " +
+      dva(d.getHours())+":"+dva(d.getMinutes()) + (KOP.ur ? " · " + KOP.ur : "") +
+      ". Šifrovana je tvojom lozinkom — niko drugi je ne može otvoriti.";
+  }
+  document.querySelectorAll("#kopAuto button").forEach(function(b){
+    b.setAttribute("aria-selected", (+b.dataset.a) === (KOP.auto ? 1 : 0));
+  });
+}
+
 /* ---------- dijeljenje ---------- */
-var VERZIJA = "3.0 · 16.11.2026.";
+var VERZIJA = "3.1 · 16.11.2026.";
 document.getElementById("verzija").textContent = "Raspored časova " + VERZIJA;
 
 (function(){
@@ -3166,6 +3459,7 @@ crtaj();
 crtajZivo();
 crtajBilj();
 crtajNalog();
+crtajKop();
 
 var zadnjiMin = -1;
 setInterval(function(){
