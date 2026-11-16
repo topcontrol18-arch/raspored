@@ -201,20 +201,24 @@ tbody th{width:36px;text-align:center;font-family:var(--mono);font-size:11.5px;c
 tbody td{border-top:1px solid var(--linija-2);border-right:1px solid var(--linija-2);padding:6px 8px;vertical-align:top}
 tbody td:last-child{border-right:0}
 .cell{min-height:36px}
-.cell.pun{background:var(--cas-bg);border-radius:var(--r);padding:6px 8px;margin:-2px;cursor:pointer}
-.cell .ime{font-size:14px;font-weight:650;color:var(--cas)}
+.cell.pun{border-radius:var(--r);padding:6px 8px;margin:-2px;cursor:pointer;
+  transition:background .12s}
+.cell.pun:hover{background:var(--linija-2)}
+.cell .ime{font-size:14px;font-weight:650;color:var(--ink)}
 .cell .vr{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:2px}
-.cell.prazno{opacity:.55}
+.cell.prazno{opacity:.5}
 .cell.prazno .vr{color:var(--ink-4)}
 .cell.sada{background:var(--cas)}
+.cell.sada:hover{background:var(--cas)}
 .cell.sada .ime{color:var(--na-akcentu)}
 .cell.sada .vr,.cell.sada .jed{color:var(--na-akcentu);opacity:.78}
-.cell .jed{font-size:11px;color:var(--ink-2);margin-top:4px;padding-top:4px;
-  border-top:1px solid var(--cas-ivica);line-height:1.3;overflow:hidden;
+.cell.sada .jed{border-top-color:rgba(255,255,255,.3)}
+.cell .jed{font-size:11px;color:var(--ink-3);margin-top:4px;padding-top:4px;
+  border-top:1px solid var(--linija-2);line-height:1.3;overflow:hidden;
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
-td.dnes{background:rgba(47,107,82,.04)}
-td.stop .cell.pun{background:var(--stop-bg)}
+td.dnes{background:rgba(47,107,82,.045)}
 td.stop .cell .ime{color:var(--stop)}
+td.stop .cell .ime:after{content:" ×";color:var(--stop);font-weight:500}
 
 /* ---------- uređivanje rasporeda ---------- */
 body.uredjuje .grid,body.uredjuje .mob,body.uredjuje .zbir,body.uredjuje details{display:none}
@@ -361,7 +365,7 @@ details[open] summary::before{content:"–"}
   h1 span{color:#444}
   .tools,.zivo,.bilj,details,.toast,.mob,.ured2{display:none!important}
   .grid{display:block;border-color:#999}
-  .cell.pun,.cell.sada{background:#EEF3F0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cell.pun,.cell.sada{background:none!important}
   .cell.sada .ime{color:#000}.cell.sada .vr{color:#555}
   thead th.dnes,td.dnes{background:#fff!important;box-shadow:none}
 }
