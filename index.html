@@ -365,9 +365,51 @@ details[open] summary::before{content:"–"}
   .cell.sada .ime{color:#000}.cell.sada .vr{color:#555}
   thead th.dnes,td.dnes{background:#fff!important;box-shadow:none}
 }
+/* ---------- prijava ---------- */
+.toast{z-index:300}
+body.zakljucano>header,body.zakljucano>main,body.zakljucano>footer{display:none!important}
+.brava{position:fixed;inset:0;z-index:200;background:var(--papir);overflow-y:auto;
+  display:flex;align-items:flex-start;justify-content:center;padding:0 16px}
+.bkart{width:100%;max-width:372px;padding:46px 0 44px}
+.bmark{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+.bmark i{display:block;width:32px;height:32px;border-radius:7px;background:var(--tabla);flex:none;
+  position:relative}
+.bmark i:after{content:"";position:absolute;left:7px;right:7px;top:10px;height:2px;background:var(--kreda-2);
+  box-shadow:0 5px 0 var(--kreda-2),0 10px 0 var(--kreda-2)}
+.bmark b{font-size:14.5px;font-weight:650;letter-spacing:-.005em}
+.bmark u{display:block;font-size:12px;color:var(--ink-3);text-decoration:none;margin-top:1px}
+.bkart h2{font-size:25px;line-height:1.18;margin:0 0 8px;font-weight:650;letter-spacing:-.02em}
+.bkart p{margin:0 0 18px;color:var(--ink-2);font-size:14px;line-height:1.55}
+.bkart p+p{margin-top:-10px}
+.bkart input{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:12px 13px;
+  border:1px solid var(--linija);border-radius:var(--r);background:var(--list);color:var(--ink);
+  margin-bottom:9px;-webkit-appearance:none}
+.bkart input:focus{outline:2px solid var(--cas);outline-offset:-2px;border-color:var(--cas)}
+.bdug{width:100%;font:inherit;font-size:15px;font-weight:650;padding:13px;margin-top:4px;
+  border:0;border-radius:var(--r);background:var(--tabla);color:var(--kreda);cursor:pointer}
+.bdug:active{background:var(--tabla-2)}
+.bdug[disabled]{opacity:.55;cursor:default}
+.blink{display:block;width:100%;background:none;border:0;color:var(--ink-3);font:inherit;font-size:13px;
+  padding:15px 0 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.blista{max-height:44vh;overflow-y:auto;border:1px solid var(--linija);border-radius:var(--r);
+  background:var(--list);margin-bottom:2px}
+.blista button{display:block;width:100%;text-align:left;font:inherit;font-size:15px;padding:11px 13px;
+  border:0;border-bottom:1px solid var(--linija-2);background:none;color:var(--ink);cursor:pointer}
+.blista button:last-child{border-bottom:0}
+.blista button:active{background:var(--cas-bg)}
+.blista button i{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:2px}
+.bprazno{padding:15px 13px;color:var(--ink-3);font-size:14px}
+.bgresk{color:var(--stop);font-size:13px;line-height:1.4;margin:1px 0 5px;min-height:18px}
+.bgresk.radi{color:var(--ink-3)}
+.bnap{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin-top:22px;
+  border-top:1px solid var(--linija-2);padding-top:14px}
+.nalogred{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.nalogred .prekid{margin-left:0}
+
 </style>
 </head>
 <body>
+<div class="brava" id="brava" style="display:none"></div>
 
 <header>
   <div class="wrap">
@@ -473,6 +515,21 @@ details[open] summary::before{content:"–"}
       <button data-tema="auto">Kao telefon</button>
       <button data-tema="svijetla">Svijetla</button>
       <button data-tema="tamna">Tamna</button>
+    </div>
+
+    <div class="uhead" style="margin-top:14px"><b>Prijava</b></div>
+    <div class="upom" id="nStanje">—</div>
+    <div class="nalogred">
+      <span style="font-size:13.5px;color:var(--ink-2)">Traži lozinku</span>
+      <div class="prekid" id="nTrazi">
+        <button data-t="1">Pri svakom otvaranju</button>
+        <button data-t="0">Samo prvi put</button>
+      </div>
+    </div>
+    <div class="nred" style="margin-top:9px">
+      <button class="btn" id="nLoz">Promijeni lozinku</button>
+      <button class="btn" id="nZakljucaj">Zaključaj sada</button>
+      <button class="btn" id="nOsvjezi" style="display:none">Vrati raspored sa spiska</button>
     </div>
 
     <div class="ured"><button class="btn" id="mReset">Obriši sve i počni ispočetka</button></div>
@@ -1010,6 +1067,8 @@ function ucitaj(){
   P = citaj("skola-plan", {});
   NAP = citaj("skola-napredak", {});
   MOJ = citaj("skola-moj", {ime:"", predmet:""});
+  NALOG = citaj("skola-nalog", null);
+  if(NALOG && !NALOG.hes) NALOG = null;
   Object.keys(E).forEach(function(d){
     Object.keys(E[d]||{}).forEach(function(o){
       Object.keys(E[d][o]||{}).forEach(function(i){
@@ -2494,11 +2553,7 @@ function crtajKonf(){
 document.getElementById("mReset").onclick = function(){
   if(!window.confirm("Obrisati SVE — raspored, učenike, evidenciju, bilješke i plan?\n\nOvo se ne može vratiti osim iz sigurnosne kopije.")) return;
   if(!window.confirm("Sigurno? Posljednja potvrda.")) return;
-  ["skola-v2","skola-nerad","skola-biljeske","skola-ucenici","skola-evidencija",
-   "skola-ubiljeske","skola-plan","skola-napredak","skola-moj","skola-skraceni","skola-konf","skola-zvona","skola-rotacija","skola-tema","skola-zadaci","skola-pocetak","skola-pomak","skola-rucno","skola-preskoceni"].forEach(function(k){
-    try{ window.localStorage.removeItem(k); }catch(e){}
-  });
-  window.location.reload();
+  obrisiSve();
 };
 
 /* ---------- sigurnosna kopija ---------- */
@@ -2627,8 +2682,409 @@ document.getElementById("btnEdit").onclick = function(){
   if(!edit) toast("Sačuvano");
 };
 
+
+/* ---------- zvanični spisak nastavnika ---------- */
+/* Raspored cijele škole. Dopunjava se samo ovdje — ostatak aplikacije se ne dira.
+   casovi[0] je 1. čas, casovi[1] drugi… smena: "I", "M" (međusmena) ili "II". */
+var SKOLA = "OŠ „Vuk Karadžić“ · Novi Pazar";
+/* zvanična zvonjava škole (obavještenje direktora, šk. 2026/2027) */
+var SKOLA_ZVONA = {
+  I: {poc:"07:00", cas:45, odmor:5, veliki:20, poslije:2, broj:7},
+  M: {poc:"11:25", cas:45, odmor:5, veliki:20, poslije:1, broj:4},
+  II:{poc:"13:20", cas:45, odmor:5, veliki:20, poslije:3, broj:7}
+};
+/* smjene se mijenjaju svakog mjeseca; spisak je upisan za novembar 2026. */
+var SKOLA_ROT = {on:true, rezim:"mjesecno", ref:"", pomak:0};
+var NASTAVNICI = [
+  {ime:"Adela Muderizović", r:{pon:{smena:"I",casovi:["VI-7s","VI-2","VI-8s","VI-6","VI-6","VI-5"]},uto:{smena:"I",casovi:["VI-6","VI-2"]},sre:{smena:"I",casovi:["VI-2","VI-8s","VI-7s","VI-5","VI-6","VI-6"]},cet:{smena:"I",casovi:["","","","","","VI-6","VI-6"]},pet:{smena:"I",casovi:["","","","","","VI-5","VI-2"]}}},
+  {ime:"Adil Ličina", r:{pon:{smena:"II",casovi:["VII-8s","V-3","V-7s"]},uto:{smena:"II",casovi:["","","VII-1","","V-7s","VII-5","VII-8s"]},sre:{smena:"II",casovi:["V-3","VII-8s","V-7s","VII-8s","VII-5","VII-1"]},cet:{smena:"II",casovi:["","","VII-8s","V-3","V-7s","VII-1","VII-5"]},pet:{smena:"II",casovi:["","","VII-5","VII-1","V-3"]}}},
+  {ime:"Aida Brničanin", r:{pon:{smena:"I",casovi:["VI-2","VIII-8s","VIII-5","VI-1"]},uto:{smena:"I",casovi:["VI-4","","VIII-7","VIII-6"]},sre:{smena:"I",casovi:["VI-1","VI-2","VI-5","VIII-8s","VIII-7"]},cet:{smena:"I",casovi:["VI-4","VI-5","VIII-6","VIII-5","VI-3"]},pet:{smena:"I",casovi:["VI-3","VIII-6"]}}},
+  {ime:"Aida Dazdarević", r:{pon:{smena:"I",casovi:["","","","","VIII-3","VIII-7","VIII-4"]},uto:{smena:"I",casovi:["VIII-3","VIII-7","VI-6"]},sre:{smena:"I",casovi:["VI-6","VIII-3","VIII-4"]},cet:{smena:"I",casovi:["","","","","VI-6","VIII-7","VIII-4"]},pet:{smena:"I",casovi:["VIII-3","VIII-4","VIII-3","VIII-7","","VI-6"]}}},
+  {ime:"Ajla Hrvaćanin", r:{pon:{smena:"II",casovi:["V-7s","","V-8s"]},uto:{smena:"I",casovi:["","","","","","VI-6","VIII-6"]},sre:{smena:"I",casovi:["","","","","VIII-4","VIII-5","VIII-3"]},cet:{smena:"I",casovi:["VI-3","VIII-7","","VIII-2","VI-1","VI-8s","VI-4"]},pet:{smena:"I",casovi:["VIII-8s","VI-2","VI-5","VIII-1","VI-6","VI-7s"]}}},
+  {ime:"Ajla Trtovac", r:{pon:{smena:"I",casovi:["VIII-5","VIII-6","","VIII-5","VIII-5","VI-8s","VIII-3"]},uto:{smena:"I",casovi:["","","VI-7s","VIII-5"]},sre:{smena:"I",casovi:["VIII-3","VI-7s","VIII-5","VI-8s","VIII-5"]},cet:{smena:"I",casovi:["","","","","VI-8s","VI-7s","VIII-6"]},pet:{smena:"I",casovi:["VIII-5","VI-8s","VI-7s"]}}},
+  {ime:"Ajtena Redžović-Škrijelj", r:{pon:{smena:"I",casovi:["VIII-7","VIII-1","VIII-8s","VIII-4","VIII-4"]},uto:{smena:"I",casovi:["VIII-4","VIII-4"]},sre:{smena:"I",casovi:["VIII-1","VIII-2","","VIII-4","VIII-8s","VIII-8s"]},cet:{smena:"I",casovi:["","","","","","VIII-2","VIII-8s"]},pet:{smena:"I",casovi:["","","","VIII-8s","VIII-7","VIII-4","VIII-8s"]}}},
+  {ime:"Alma Hasanović", r:{uto:{smena:"I",casovi:["VIII-9"]}}},
+  {ime:"Alma Rizvanović", r:{pon:{smena:"II",casovi:["","","","","VII-8s","VII-5"]},uto:{smena:"II",casovi:["VII-4","VII-8s","VII-7s","VII-5","VII-8s"]},sre:{smena:"II",casovi:["VII-4","VII-7s"]},cet:{smena:"II",casovi:["VII-8s","","VII-7s","VII-5","VII-5","VII-8s","VII-4"]},pet:{smena:"II",casovi:["","","","VII-4","VII-5","VII-7s","VII-8s"]}}},
+  {ime:"Almasa Kurahović", r:{pon:{smena:"II",casovi:["V-4","V-8s","V-2","V-2"]},uto:{smena:"II",casovi:["V-4","V-2","V-8s"]},sre:{smena:"II",casovi:["V-4","V-2","V-2","V-8s","","V-2"]},cet:{smena:"II",casovi:["V-8s","V-2","V-4"]},pet:{smena:"II",casovi:["","","","V-2","V-8s","V-4","V-2"]}}},
+  {ime:"Altuna Čeli", r:{pon:{smena:"I",casovi:["","","","","","","VIII-9"]},cet:{smena:"I",casovi:["","","","","","","VIII-9"]}}},
+  {ime:"Amela Delić", r:{pon:{smena:"I",casovi:["","","","","","VI-6","VI-4"]},uto:{smena:"I",casovi:["VI-2","VI-6","VI-5","VI-3","VI-8s","VI-7s"]},sre:{smena:"I",casovi:["VI-8s","VI-4","VI-3","VI-2","VI-7s","VI-5"]},cet:{smena:"II",casovi:["","","","","","VII-7s","VII-8s"]},pet:{smena:"II",casovi:["","","","","VII-8s","","VII-7s"]}}},
+  {ime:"Amina Islamović", r:{pon:{smena:"I",casovi:["VIII-1","VI-1","VI-2"]},uto:{smena:"I",casovi:["VIII-6","VIII-1"]},sre:{smena:"I",casovi:["","","VI-1","VIII-6","VI-1","VIII-1","VI-2"]},cet:{smena:"I",casovi:["","VIII-6","VI-1","VI-1"]},pet:{smena:"I",casovi:["VI-1","","VIII-1","VI-1","VIII-6","VI-2","VIII-1"]}}},
+  {ime:"Amina Jerebičanin", r:{pon:{smena:"II",casovi:["VII-2","VII-3","VII-4"]},uto:{smena:"II",casovi:["VII-3","VII-4","VII-2"]},sre:{smena:"I",casovi:["","VIII-8s","VIII-7","VIII-9","VIII-3","VIII-6","VIII-5"]},cet:{smena:"I",casovi:["VIII-6","VIII-4","VIII-9"]},pet:{smena:"I",casovi:["VIII-4","VIII-3","VIII-7","VIII-5","VIII-8s","VIII-7"]}}},
+  {ime:"Amina Radetinac", r:{pon:{smena:"II",casovi:["VII-6","VII-4","VII-8s"]},sre:{smena:"II",casovi:["","","","","VII-1","VII-3","VII-7s"]},pet:{smena:"II",casovi:["VII-4","VII-8s","VII-7s","","VII-6","VII-3","VII-1"]}}},
+  {ime:"Anisa Vatić", r:{pon:{smena:"I",casovi:["VIII-4","VIII-3","VIII-9"]},uto:{smena:"I",casovi:["","","","","VIII-2","VIII-1","VIII-3"]},sre:{smena:"I",casovi:["VI-7s","VI-6","VIII-2","","VIII-9","VI-8s","VIII-4"]},cet:{smena:"I",casovi:["VIII-4","VI-7s","VI-6","VI-8s","VIII-1"]},pet:{smena:"II",casovi:["VII-5"]}}},
+  {ime:"Antonina Minić", r:{pon:{smena:"II",casovi:["","","","VII-7s","VII-2","V-4"]},uto:{smena:"II",casovi:["VII-1","VII-6","VII-4","VII-7s","","V-3"]},sre:{smena:"II",casovi:["VII-5","VII-3"]},cet:{smena:"II",casovi:["","","","VII-8s","V-2","VII-6","VII-1"]},pet:{smena:"II",casovi:["V-1","VII-6","VII-8s","VII-2","VII-4","VII-5","VII-3"]}}},
+  {ime:"Asmir Hodžić", r:{pon:{smena:"II",casovi:["V-3","VII-7s","","VII-3","V-1"]},uto:{smena:"II",casovi:["VII-6","V-8s","V-4","V-7s","V-5","VII-8s"]},sre:{smena:"II",casovi:["","","","","","VII-5","VII-1"]},cet:{smena:"II",casovi:["","","","V-6","VII-4","V-2","VII-2"]}}},
+  {ime:"Azamela Papić", r:{pon:{smena:"I",casovi:["VI-6","","VI-4"]},pet:{smena:"I",casovi:["","","","","","VI-4","VI-6"]}}},
+  {ime:"Azemina Bojadžić", r:{pon:{smena:"II",casovi:["","","","V-3","V-5","V-5","V-4"]},uto:{smena:"II",casovi:["V-5","","V-3","V-3"]},sre:{smena:"II",casovi:["","","V-3","V-5","V-3","V-5","V-4"]},cet:{smena:"II",casovi:["","","","","V-3","V-5"]},pet:{smena:"II",casovi:["V-3","V-5","V-3","V-4","V-5","V-3"]}}},
+  {ime:"Azra Baćićanin", r:{pon:{smena:"II",casovi:["","","","","VII-1","VII-3","VII-6"]},uto:{smena:"II",casovi:["","","VII-6","VII-1","VII-1","VII-3","VII-5"]},sre:{smena:"II",casovi:["VII-1","VII-5","VII-6","VII-3"]},cet:{smena:"II",casovi:["VII-6","VII-1","VII-5","VII-1","","VII-3"]},pet:{smena:"II",casovi:["VII-1","VII-1"]}}},
+  {ime:"Azra Ganić", r:{pon:{smena:"II",casovi:["V-2","V-6"]},uto:{smena:"II",casovi:["","","","","V-3","V-5"]},sre:{smena:"II",casovi:["V-8s","V-4"]},cet:{smena:"II",casovi:["V-3","V-4","V-7s"]},pet:{smena:"II",casovi:["V-6","V-7s","V-5","V-8s","","V-2"]}}},
+  {ime:"Birsena Hasanović", r:{pon:{smena:"II",casovi:["","","","","","V-8s","VII-5"]},uto:{smena:"II",casovi:["","","","","VII-2","V-8s","VII-3"]},sre:{smena:"II",casovi:["VII-3","V-8s","VII-5"]},pet:{smena:"II",casovi:["VII-2","V-8s"]}}},
+  {ime:"Dušica Martić", r:{pon:{smena:"II",casovi:["","","","","","V-2"]},uto:{smena:"II",casovi:["","","","V-6","","VII-7s"]},sre:{smena:"II",casovi:["","","","","VII-4","VII-7s","VII-3"]},cet:{smena:"II",casovi:["VII-5","VII-8s","V-5","","VII-6","V-3"]},pet:{smena:"II",casovi:["V-4","","VII-1","","V-1","","VII-2"]}}},
+  {ime:"Dženan Totić", r:{pon:{smena:"II",casovi:["","","VII-5","VII-6","VII-7s","VII-8s","VII-4"]},uto:{smena:"II",casovi:["VII-7s","VII-5","","VII-8s","VII-6","VII-4"]},sre:{smena:"I",casovi:["VIII-9","VIII-4","VIII-8s"]},cet:{smena:"I",casovi:["VIII-5","VIII-8s","VIII-4","VIII-9","VIII-6"]},pet:{smena:"I",casovi:["","VIII-5","VIII-6"]}}},
+  {ime:"Dženan Škrijelj", r:{pon:{smena:"I",casovi:["VIII-8s","VIII-7","VIII-4","VIII-3"]},uto:{smena:"I",casovi:["VIII-8s","VIII-2","VIII-5","VIII-7","VI-1","VIII-9"]},sre:{smena:"I",casovi:["VIII-2","VIII-1","","VIII-3","VIII-6","VIII-4","VIII-9"]},cet:{smena:"I",casovi:["","","","","","VIII-1","VI-1"]},pet:{smena:"I",casovi:["","","","VIII-6","VIII-5"]}}},
+  {ime:"Dženita Murić", r:{pon:{smena:"II",casovi:["","","","V-7s","V-8s","V-7s"]},uto:{smena:"II",casovi:["V-2","V-3","VII-8s"]},sre:{smena:"II",casovi:["V-6","V-5","V-4","VII-6","VII-7s","V-1","VII-5"]},cet:{smena:"I",casovi:["","","","VIII-8s","VIII-3"]},pet:{smena:"I",casovi:["VIII-6","VI-6","VIII-4","VI-3","VI-4","VIII-5"]}}},
+  {ime:"Edin Kačar", r:{pon:{smena:"I",casovi:["VI-1","VI-6","VI-5","VI-3","VI-2","VI-7s"]},uto:{smena:"I",casovi:["","VI-8s","VI-3","VI-4","VI-6"]},sre:{smena:"I",casovi:["","","","VI-7s","VI-2","VI-3"]},cet:{smena:"I",casovi:["VI-1","VI-2","VI-5","VI-4"]},pet:{smena:"I",casovi:["","VI-1","VI-4","VI-8s"]}}},
+  {ime:"Edin Korićanin", r:{pon:{smena:"I",casovi:["VI-5","VI-4","VI-3","","VI-1","VIII-1","VI-2"]},uto:{smena:"I",casovi:["VI-7s","VI-4","VIII-2","VI-1"]},sre:{smena:"I",casovi:["","","","VIII-2","VI-3","VIII-3","VI-7s"]},cet:{smena:"I",casovi:["VI-7s","VI-6","VIII-1","VI-2","VI-5"]},pet:{smena:"I",casovi:["","","","VI-6","VIII-3"]}}},
+  {ime:"Edin Salihović", r:{pon:{smena:"II",casovi:["V-6","V-2","V-4","V-5","V-3","V-1"]},uto:{smena:"II",casovi:["V-6","V-5","V-7s","V-4","V-8s"]},sre:{smena:"II",casovi:["","","","V-3","V-1","V-4","V-5"]},cet:{smena:"II",casovi:["","V-8s","V-6","V-2","V-4"]},pet:{smena:"II",casovi:["","V-3","V-7s"]}}},
+  {ime:"Edin Ujkanović", r:{pon:{smena:"II",casovi:["","","","VII-2","VII-5","VII-6","VII-1"]},uto:{smena:"II",casovi:["","VII-3","V-1","V-2","VII-5","VII-2","VII-1"]},sre:{smena:"II",casovi:["","","VII-4","VII-5"]},cet:{smena:"II",casovi:["VII-1","VII-4","VII-6","VII-2","VII-3"]},pet:{smena:"II",casovi:["","VII-3","VII-4","VII-6"]}}},
+  {ime:"Edina Rašljanin-Beširović", r:{pon:{smena:"I",casovi:["","","","VI-2","VI-5","VI-4","VI-1"]},uto:{smena:"I",casovi:["VI-1","VI-3","VI-2","VI-5","VI-4"]},sre:{smena:"I",casovi:["VI-4","VI-1","VI-2","VI-3"]},cet:{smena:"I",casovi:["","","","","VI-2","VI-3","VI-5"]},pet:{smena:"I",casovi:["VI-4","VI-3","","VI-2","VI-5","VI-1"]}}},
+  {ime:"Elvis Divanefendić", r:{pon:{smena:"II",casovi:["","VII-2","VII-2"]},uto:{smena:"II",casovi:["","VII-2","VII-3"]},sre:{smena:"II",casovi:["","VII-2","VII-2","VII-2"]},cet:{smena:"II",casovi:["","VII-2","VII-3"]},pet:{smena:"II",casovi:["","VII-2","VII-3"]}}},
+  {ime:"Emina Delimeđac", r:{pon:{smena:"I",casovi:["","","VI-7s","","VIII-7","VIII-6","VIII-8s"]},uto:{smena:"I",casovi:["","","VI-4","VI-6","VIII-5","VIII-6","VI-5"]},sre:{smena:"I",casovi:["VIII-8s","VI-5","VIII-9","VI-6"]},cet:{smena:"I",casovi:["","","","","","VI-4","VIII-5"]},pet:{smena:"I",casovi:["","","","VI-5","VI-7s","VIII-9","VIII-7"]}}},
+  {ime:"Emina Kahrović", r:{pon:{smena:"II",casovi:["","","","","","VII-1","V-8s"]},uto:{smena:"II",casovi:["V-8s","V-4","V-2"]},sre:{smena:"II",casovi:["V-5","VII-1","VII-3","V-1","V-4","V-3","VII-2"]},cet:{smena:"II",casovi:["V-5","V-1","V-3","","VII-2","V-6"]},pet:{smena:"II",casovi:["V-8s","V-2","V-6","VII-3"]}}},
+  {ime:"Enes Plojović", r:{pon:{smena:"I",casovi:["","VIII-5","VIII-3","VIII-6","VIII-2","VIII-4","VIII-1"]},uto:{smena:"I",casovi:["VIII-1","VIII-5","VIII-3"]},sre:{smena:"I",casovi:["VI-5","VIII-6","VI-6"]},cet:{smena:"I",casovi:["","VIII-5","VIII-3","VIII-4","VIII-2","VIII-6"]},pet:{smena:"I",casovi:["","","VIII-2","VIII-4","VIII-1"]}}},
+  {ime:"Enisa Jusufović", r:{pon:{smena:"I",casovi:["","VI-5","VI-1","VIII-7","VIII-1","VIII-2"]},uto:{smena:"II",casovi:["","","","VII-3","VII-4","VII-1","VII-2"]},sre:{smena:"II",casovi:["V-6","V-5","V-4"]},cet:{smena:"I",casovi:["","","","VIII-8s","VIII-3","VI-2"]},pet:{smena:"I",casovi:["VIII-6","VI-6","VIII-4","VIII-9","","VIII-5"]}}},
+  {ime:"Envera Suljić", r:{pon:{smena:"I",casovi:["","","","VI-8s","VI-3","VIII-3","VI-8s"]},uto:{smena:"I",casovi:["VI-3","VI-1","","VI-2","VIII-4","VIII-2"]},sre:{smena:"I",casovi:["","","VI-8s","VIII-1"]},cet:{smena:"I",casovi:["VIII-3","VIII-1","VI-2"]},pet:{smena:"I",casovi:["","","","","VI-1","VIII-2","VIII-4"]}}},
+  {ime:"Ethem Agić", r:{pon:{smena:"I",casovi:["VI-8s","VI-5","VI-1","","VIII-1","VIII-2"]},uto:{smena:"II",casovi:["V-2","V-3","VII-8s","VII-3","VII-4","VII-1","VII-2"]},sre:{smena:"II",casovi:["","","","VII-6","VII-7s","V-1","VII-5"]},cet:{smena:"I",casovi:["","","","","","VI-2","VI-7s"]},pet:{smena:"I",casovi:["","","","VI-3","VI-4"]}}},
+  {ime:"Fahrudin Mustafić", r:{pon:{smena:"I",casovi:["VI-5","VI-4","VI-3","","VI-1","VIII-1","VI-2"]},uto:{smena:"I",casovi:["","VI-4","VIII-2","VI-1"]},sre:{smena:"I",casovi:["","","","VIII-2","VI-3","VIII-3","VI-8s"]},cet:{smena:"I",casovi:["VI-8s","VI-6","VIII-1","VI-2","VI-5"]},pet:{smena:"I",casovi:["","","","VI-6","VIII-3"]}}},
+  {ime:"Farisa Bajramlić", r:{pon:{smena:"I",casovi:["","VIII-4","VIII-2","VIII-8s","VIII-9","VI-1"]},uto:{smena:"I",casovi:["VIII-5","VIII-6","VIII-8s","VIII-3","","VI-1","VIII-1"]},sre:{smena:"I",casovi:["VIII-4","VIII-7","VIII-6"]},cet:{smena:"I",casovi:["","","","","","VI-1","VIII-3"]},pet:{smena:"I",casovi:["VIII-1","VIII-7","VIII-5","VIII-2","VIII-9"]}}},
+  {ime:"Hana Župić", r:{pon:{smena:"II",casovi:["V-1","V-5","V-6","V-4"]},uto:{smena:"II",casovi:["","","","V-1","V-2","V-4","V-6"]},sre:{smena:"II",casovi:["V-2","V-1","","V-4","V-5"]},cet:{smena:"II",casovi:["V-6","V-5","V-2"]},pet:{smena:"II",casovi:["V-2","V-6","V-1","V-5","V-4","V-5"]}}},
+  {ime:"Haris Dugopoljac", r:{pon:{smena:"II",casovi:["","","","","","VII-1","V-7s"]},uto:{smena:"II",casovi:["V-7s","V-4","V-2"]},sre:{smena:"II",casovi:["V-5","VII-1","VII-3","V-1","V-4","V-3","VII-2"]},cet:{smena:"II",casovi:["V-5","V-1","V-3","","VII-2","V-6"]},pet:{smena:"II",casovi:["","V-2","V-6","VII-3"]}}},
+  {ime:"Hasib Ukić", r:{pon:{smena:"II",casovi:["","","VII-3","VII-4","VII-6","VII-7s"]},uto:{smena:"II",casovi:["","","","VII-2","VII-7s","VII-6","VII-4"]},sre:{smena:"II",casovi:["VII-2","VII-6","","VII-4","VII-3"]},cet:{smena:"II",casovi:["VII-4","VII-3","VII-4","VII-6","VII-7s","VII-2"]},pet:{smena:"II",casovi:["","","VII-2","VII-7s","VII-3"]}}},
+  {ime:"Ifeta Totić", r:{pon:{smena:"I",casovi:["VIII-6","VI-7s","VIII-1"]},uto:{smena:"I",casovi:["","","","","VIII-3","VIII-4","VIII-5"]},sre:{smena:"I",casovi:["","","","","VIII-2","VI-4","VIII-7"]},cet:{smena:"I",casovi:["VIII-8s","VIII-9","VI-3","VI-5"]},pet:{smena:"I",casovi:["VI-6","VIII-8s","VI-1","","VI-2","VI-8s"]}}},
+  {ime:"Indira Brunčević", r:{pon:{smena:"II",casovi:["VII-5","VII-1"]},uto:{smena:"II",casovi:["VII-8s","VII-7s","","VII-6","V-1"]},sre:{smena:"II",casovi:["","","","VII-1","VII-2","VII-6","VII-8s"]},cet:{smena:"II",casovi:["VII-3","VII-5","VII-2","VII-7s","V-1","VII-4","VII-3"]},pet:{smena:"II",casovi:["VII-3","VII-4"]}}},
+  {ime:"Irma Papić", r:{pon:{smena:"I",casovi:["VIII-2","VI-8s","VIII-6","VI-7s"]},uto:{smena:"I",casovi:["","","","","VIII-6","VI-8s","VIII-2"]},sre:{smena:"I",casovi:["","","","","","VI-7s","VIII-6"]},cet:{smena:"I",casovi:["VIII-2","VI-8s","VI-7s"]},pet:{smena:"I",casovi:["VIII-2","VIII-2","","VI-7s","VI-8s","VIII-6"]}}},
+  {ime:"Ivana Mojović", r:{pon:{smena:"I",casovi:["VI-3","VIII-2","VI-6","VI-5","VI-8s"]},uto:{smena:"I",casovi:["VI-8s","VI-7s","VIII-1","VIII-2","VI-5"]},sre:{smena:"I",casovi:["","","","VI-1","VI-4","VI-2","VI-3"]},cet:{smena:"I",casovi:["VIII-1","VI-1","","VI-7s","VI-4"]},pet:{smena:"I",casovi:["VI-2","VI-4","VI-6"]}}},
+  {ime:"Jelena Vasiljević", r:{pon:{smena:"II",casovi:["","","","VII-1","VII-4","VII-2","VII-3"]},uto:{smena:"I",casovi:["VI-5","VIII-8s","VIII-6","VI-8s","VI-7s","VI-3"]},sre:{smena:"I",casovi:["","","","","","VI-1","VI-4"]},cet:{smena:"I",casovi:["VI-2","VIII-3","VIII-2","VI-6","VIII-7","VIII-4"]},pet:{smena:"I",casovi:["","","","","","VIII-1","VIII-5"]}}},
+  {ime:"Lejla Hajrović", r:{pon:{smena:"II",casovi:["VII-3","VII-5"]},uto:{smena:"II",casovi:["VII-5","V-1"]},sre:{smena:"II",casovi:["VII-6","VII-4","V-6","V-7s"]},cet:{smena:"II",casovi:["VII-2","V-6","V-8s","VII-3","VII-1","V-4","V-5"]},pet:{smena:"II",casovi:["VII-6","","V-2","V-3","VII-2","VII-1","VII-4"]}}},
+  {ime:"Lejla Nokić", r:{sre:{smena:"II",casovi:["","","","","V-7s","V-6","V-8s"]},cet:{smena:"II",casovi:["","","","V-8s","V-6","V-7s"]}}},
+  {ime:"Maja Mustafić", r:{pon:{smena:"II",casovi:["","","","","V-7s"]},uto:{smena:"II",casovi:["","","","","","V-7s"]},sre:{smena:"II",casovi:["V-7s"]},cet:{smena:"II",casovi:["V-7s"]},pet:{smena:"II",casovi:["V-7s"]}}},
+  {ime:"Minela Ziljkić", r:{pon:{smena:"II",casovi:["V-5","V-4","V-3","V-1","V-2","V-6"]},uto:{smena:"II",casovi:["","","","V-5","V-4","V-6","V-8s"]},sre:{smena:"II",casovi:["","","","V-2","V-8s","VII-2"]},cet:{smena:"II",casovi:["V-1","V-7s"]},pet:{smena:"II",casovi:["","","","V-7s","","VII-2","V-3"]}}},
+  {ime:"Mirela Ferizović", r:{pon:{smena:"I",casovi:["VI-4","VI-3"]},uto:{smena:"I",casovi:["","","","","VI-2","VI-5","VI-6"]},sre:{smena:"II",casovi:["","","V-5","","V-6","V-8s","V-7s"]},cet:{smena:"I",casovi:["VI-6","VI-4","VI-8s","VI-3","VI-7s","VI-5"]},pet:{smena:"I",casovi:["VI-8s","VI-7s","VI-2"]}}},
+  {ime:"Mirsada Preljević", r:{pon:{smena:"II",casovi:["","","VII-1","VII-5","VII-3","VII-4","VII-2"]},uto:{smena:"II",casovi:["VII-2","VII-1","VII-5","VII-4","VII-3"]}}},
+  {ime:"Mladen Timotijević", r:{pon:{smena:"II",casovi:["","","","","V-4","V-3","V-1"]},uto:{smena:"II",casovi:["V-3","V-7s","V-5"]},sre:{smena:"II",casovi:["","","V-8s","V-6","V-2","VII-8s"]},cet:{smena:"II",casovi:["V-4","VII-7s","","V-7s"]},pet:{smena:"II",casovi:["V-5","V-1","V-8s","V-6","V-2","VII-6","VII-5"]}}},
+  {ime:"Muhedin Ljajić", r:{pon:{smena:"II",casovi:["","","VII-5","VII-6","VII-7s","VII-8s","VII-4"]},uto:{smena:"II",casovi:["VII-7s","VII-5","","VII-8s","VII-6","VII-4"]},sre:{smena:"I",casovi:["VIII-7","VIII-4","VIII-8s"]},cet:{smena:"I",casovi:["VIII-5","VIII-8s","VIII-4","VIII-7","VIII-6"]},pet:{smena:"I",casovi:["","VIII-5","VIII-6"]}}},
+  {ime:"Nejla Baltić", r:{pon:{smena:"II",casovi:["VII-7s","","VII-6","VII-8s"]},uto:{smena:"I",casovi:["VIII-2","VIII-3","VIII-4","VIII-1","","VIII-7"]},sre:{smena:"I",casovi:["VIII-6","VIII-5","VIII-3"]},cet:{smena:"I",casovi:["","VIII-2","VIII-7","VIII-6","VIII-4","VIII-5","VIII-1"]},pet:{smena:"II",casovi:["VII-8s","VII-7s","VII-6"]}}},
+  {ime:"Nermin Vesnić", r:{pon:{smena:"II",casovi:["V-8s","VII-8s","VII-7s"]},uto:{smena:"I",casovi:["","","","VI-7s","VIII-9","VIII-8s","VIII-7"]},sre:{smena:"I",casovi:["","","","VIII-7","VI-8s","VIII-9","VIII-8s"]},cet:{smena:"I",casovi:["","","","","VIII-8s","VIII-9","VIII-7"]},pet:{smena:"II",casovi:["","","","VII-8s","VII-7s"]}}},
+  {ime:"Nikola Vuletić", r:{pon:{smena:"I",casovi:["VIII-9"]}}},
+  {ime:"Rafeta Emrović", r:{pon:{smena:"I",casovi:["","","","","VI-7s","VI-2","VI-3"]},uto:{smena:"I",casovi:["","VI-5","VI-8s","","VI-3","VI-2"]},sre:{smena:"II",casovi:["","","VII-1","VII-7s","VII-8s","VII-4","VII-6"]},cet:{smena:"II",casovi:["VII-7s","VII-6","VII-1","VII-4","VII-8s"]},pet:{smena:"I",casovi:["VI-7s","VI-5","VI-8s"]}}},
+  {ime:"Sabina Azemović", r:{pon:{smena:"I",casovi:["","","","VI-4","VI-4","VI-3","VI-5"]},uto:{smena:"I",casovi:["","","","","","VI-4","VI-3"]},sre:{smena:"I",casovi:["VI-3","VI-3","VI-4","VI-4","VI-5"]},cet:{smena:"I",casovi:["VI-5","VI-3","VI-4"]},pet:{smena:"I",casovi:["VI-5","","VI-3","VI-4","VI-3","VI-3"]}}},
+  {ime:"Selma Biberović", r:{pon:{smena:"II",casovi:["","","V-1","V-6","V-6"]},uto:{smena:"II",casovi:["V-1","V-6","V-6","V-8s","","V-1"]},sre:{smena:"II",casovi:["V-1","V-6","V-1"]},cet:{smena:"II",casovi:["","","","V-1","V-8s","V-1","V-6"]},pet:{smena:"II",casovi:["","","","V-1","V-6","V-6","V-1"]}}},
+  {ime:"Semina Hadžiibrahimović", r:{pon:{smena:"I",casovi:["","","","","","VIII-8s"]},cet:{smena:"I",casovi:["","","","","","VIII-8s"]}}},
+  {ime:"Seniha Vejselović", r:{pon:{smena:"II",casovi:["VII-1","V-1","V-5"]},uto:{smena:"II",casovi:["","","","","","V-2","VII-6"]},sre:{smena:"II",casovi:["VII-7s","V-3","VII-8s"]},cet:{smena:"II",casovi:["V-2","V-3","V-1","V-4","V-5","VII-5","VII-6"]},pet:{smena:"II",casovi:["VII-7s","","V-4","VII-5","VII-1","VII-8s"]}}},
+  {ime:"Sumera Halilović", r:{pon:{smena:"I",casovi:["","","","VIII-9","VIII-8s","VIII-5"]},uto:{smena:"I",casovi:["","","","VIII-8s","VIII-1","VIII-5","VIII-9"]},sre:{smena:"I",casovi:["VIII-5","VIII-9","VIII-1"]},cet:{smena:"I",casovi:["VIII-9","","VIII-8s","VIII-1","VIII-5"]},pet:{smena:"I",casovi:["VIII-9","VIII-1","VIII-8s"]}}},
+  {ime:"Vedžiha Zećović", r:{pon:{smena:"I",casovi:["","","","VIII-1","VIII-6","VIII-9","VIII-2"]},uto:{smena:"I",casovi:["VIII-7","VIII-9","VI-1","VIII-4","VIII-8s"]},sre:{smena:"I",casovi:["","","","VIII-5","VIII-1","VIII-2","VI-1"]},cet:{smena:"I",casovi:["VIII-7","","VIII-5","VIII-3"]},pet:{smena:"I",casovi:["","","","VIII-3","VIII-4","VIII-8s","VIII-6"]}}},
+  {ime:"Zehra Pljakić", r:{pon:{smena:"I",casovi:["VIII-3","VIII-9","VIII-7","VIII-2"]},uto:{smena:"I",casovi:["","","VIII-9","VIII-9","VIII-7","VIII-3"]},sre:{smena:"I",casovi:["","","","","","VIII-7","VIII-2"]},cet:{smena:"I",casovi:["","","","","VIII-9","VIII-3","VIII-2"]},pet:{smena:"I",casovi:["VIII-7","VIII-9","VIII-9","","VIII-2","VIII-3"]}}}
+];
+
+/* ---------- nalog i zaključavanje ---------- */
+var NALOG = null;
+var bKorak = "izbor", bIme = "", bFilter = "", bPokusaj = 0, bRadi = false, pokrenuto = false;
+
+function bezKv(t){
+  return String(t||"").toLowerCase()
+    .replace(/[čć]/g,"c").replace(/ž/g,"z").replace(/š/g,"s").replace(/đ/g,"dj");
+}
+function heks(a){ var s="",i; for(i=0;i<a.length;i++) s += (a[i]<16?"0":"") + a[i].toString(16); return s; }
+function nasumicno(n){
+  var a = new Uint8Array(n), i;
+  if(window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(a);
+  else for(i=0;i<n;i++) a[i] = Math.floor(Math.random()*256);
+  return heks(a);
+}
+function hesJS(loz, so){
+  var t = so + "|" + loz, h1 = 2166136261, h2 = 16777619, i, j;
+  for(j=0;j<4000;j++){
+    for(i=0;i<t.length;i++){
+      h1 = ((h1 ^ t.charCodeAt(i)) * 16777619) >>> 0;
+      h2 = ((h2 + h1) * 2654435761) >>> 0;
+    }
+    t = h1.toString(16) + "." + h2.toString(16) + "." + so;
+  }
+  return ("0000000"+h1.toString(16)).slice(-8) + ("0000000"+h2.toString(16)).slice(-8);
+}
+function hesiraj(loz, so){
+  var c = window.crypto && window.crypto.subtle;
+  if(c && window.TextEncoder){
+    try{
+      var enc = new TextEncoder();
+      return c.importKey("raw", enc.encode(loz), {name:"PBKDF2"}, false, ["deriveBits"])
+        .then(function(k){
+          return c.deriveBits({name:"PBKDF2", salt:enc.encode(so), iterations:120000, hash:"SHA-256"}, k, 256);
+        })
+        .then(function(b){ return {alg:"pbkdf2", hes:heks(new Uint8Array(b))}; })
+        .catch(function(){ return {alg:"js", hes:hesJS(loz, so)}; });
+    }catch(e){}
+  }
+  return Promise.resolve({alg:"js", hes:hesJS(loz, so)});
+}
+function provjeriLoz(loz, nal){
+  if(nal.alg === "js") return Promise.resolve(hesJS(loz, nal.sol) === nal.hes);
+  return hesiraj(loz, nal.sol).then(function(x){ return x.alg === "pbkdf2" && x.hes === nal.hes; });
+}
+function oznaciSesiju(){ try{ window.sessionStorage.setItem("skola-sesija","1"); }catch(e){} }
+function brisiSesiju(){ try{ window.sessionStorage.removeItem("skola-sesija"); }catch(e){} }
+function trebaZakljucati(){
+  if(!NALOG) return false;
+  if(NALOG.trazi === 0) return false;
+  try{ if(window.sessionStorage.getItem("skola-sesija") === "1") return false; }catch(e){}
+  return true;
+}
+function nadjiNastavnika(ime){
+  var t = bezKv(ime);
+  for(var i=0;i<NASTAVNICI.length;i++) if(bezKv(NASTAVNICI[i].ime) === t) return NASTAVNICI[i];
+  return null;
+}
+function primijeniSpisak(n, prvi){
+  if(!n || !n.r) return false;
+  if(prvi){
+    ["I","M","II"].forEach(function(k){
+      ["poc","cas","odmor","veliki","poslije","broj"].forEach(function(f){ ZVONA[k][f] = SKOLA_ZVONA[k][f]; });
+    });
+    gradiZvona();
+    pisi("skola-zvona", ZVONA);
+    ROT.on = SKOLA_ROT.on; ROT.rezim = SKOLA_ROT.rezim; ROT.ref = SKOLA_ROT.ref; ROT.pomak = SKOLA_ROT.pomak;
+    pisi("skola-rotacija", ROT);
+  }
+  DANI.forEach(function(d){
+    var x = n.r[d[0]];
+    R[d[0]].smena = x ? (x.smena || "") : "";
+    for(var i=0;i<MAXC;i++) R[d[0]].casovi[i] = (x && x.casovi && x.casovi[i]) || "";
+  });
+  pisi("skola-v2", R);
+  return true;
+}
+
+/* ---------- ekran za prijavu ---------- */
+function brEl(){ return document.getElementById("brava"); }
+function zaglavljeBrave(){
+  return '<div class="bmark"><i></i><div><b>Raspored časova</b>' +
+         (SKOLA ? '<u>' + esc(SKOLA) + '</u>' : '') + '</div></div>';
+}
+function crtajBravu(){
+  var el = brEl();
+  document.body.classList.add("zakljucano");
+  el.style.display = "";
+  var h = '<div class="bkart">' + zaglavljeBrave();
+  if(bKorak === "izbor")      h += bEkranIzbor();
+  else if(bKorak === "nova")  h += bEkranNova();
+  else if(bKorak === "ulaz")  h += bEkranUlaz();
+  else if(bKorak === "zabor") h += bEkranZabor();
+  el.innerHTML = h + '</div>';
+  veziBravu();
+}
+function bEkranIzbor(){
+  var h = '<h2>Ko si ti?</h2>';
+  if(NASTAVNICI.length){
+    h += '<p>Izaberi svoje ime sa spiska — raspored se upisuje sam. Poslije postavljaš lozinku.</p>';
+    h += '<input type="text" id="bTrazi" placeholder="Upiši dio imena…" autocomplete="off" value="' + esc(bFilter) + '">';
+    var f = bezKv(bFilter);
+    var lista = NASTAVNICI.filter(function(n){
+      return !f || bezKv(n.ime).indexOf(f) >= 0 || bezKv(n.predmet).indexOf(f) >= 0;
+    });
+    h += '<div class="blista">';
+    if(lista.length) lista.forEach(function(n){
+      h += '<button type="button" data-ime="' + esc(n.ime) + '">' + esc(n.ime) +
+           (n.predmet ? '<i>' + esc(n.predmet) + '</i>' : '') + '</button>';
+    });
+    else h += '<div class="bprazno">Nema nikoga s tim imenom.</div>';
+    h += '</div>';
+    h += '<button class="blink" id="bNema">Nisam na spisku — unijeću raspored sam</button>';
+  } else {
+    h += '<p>Upiši svoje ime i prezime, pa postavi lozinku. Raspored unosiš poslije kroz Izmeni.</p>';
+    h += '<input type="text" id="bRucno" placeholder="Ime i prezime" autocomplete="name">';
+    h += '<div class="bgresk" id="bG"></div>';
+    h += '<button class="bdug" id="bDalje">Dalje</button>';
+  }
+  return h;
+}
+function bEkranNova(){
+  var n = nadjiNastavnika(bIme);
+  return '<h2>' + esc(bIme) + '</h2>' +
+    '<p>' + (n ? 'Raspored, zvona i promjena smjena su ti upisani. ' : '') +
+    'Postavi lozinku — od sada samo ona otvara aplikaciju na ovom uređaju.</p>' +
+    '<input type="password" id="bL1" placeholder="Nova lozinka" autocomplete="new-password">' +
+    '<input type="password" id="bL2" placeholder="Ponovi lozinku" autocomplete="new-password">' +
+    '<div class="bgresk" id="bG"></div>' +
+    '<button class="bdug" id="bSnimi">Sačuvaj i uđi</button>' +
+    '<button class="blink" id="bNazad">Nazad na spisak</button>' +
+    '<div class="bnap">Zapiši lozinku negdje. Ne čuva se ni na jednom serveru, pa se ne može vratiti — ' +
+    'zaboravljena lozinka znači brisanje podataka na ovom uređaju.</div>';
+}
+function bEkranUlaz(){
+  return '<h2>' + esc(NALOG.ime) + '</h2>' +
+    '<p>Unesi lozinku.</p>' +
+    '<input type="password" id="bL" placeholder="Lozinka" autocomplete="current-password">' +
+    '<div class="bgresk" id="bG"></div>' +
+    '<button class="bdug" id="bUdji">Uđi</button>' +
+    '<button class="blink" id="bZab">Zaboravio/la sam lozinku</button>';
+}
+function bEkranZabor(){
+  return '<h2>Zaboravljena lozinka</h2>' +
+    '<p>Lozinka stoji samo na ovom uređaju i ne može se pročitati ni poslati. Jedini izlaz je brisanje i novi početak.</p>' +
+    '<p>Ako imaš sigurnosnu kopiju (.json fajl), podatke vraćaš poslije kroz <b>Izmeni → Sigurnosna kopija</b>.</p>' +
+    '<button class="bdug" id="bObrisi">Obriši sve i počni iznova</button>' +
+    '<button class="blink" id="bOdust">Odustani</button>';
+}
+function bPoruka(t, radi){
+  var g = document.getElementById("bG");
+  if(!g) return;
+  g.textContent = t || "";
+  g.classList.toggle("radi", !!radi);
+}
+function bZauzet(da){
+  bRadi = da;
+  brEl().querySelectorAll(".bdug").forEach(function(b){ b.disabled = da; });
+}
+function fokusiraj(id){
+  var e = document.getElementById(id);
+  if(e) setTimeout(function(){ try{ e.focus(); }catch(x){} }, 30);
+}
+function veziBravu(){
+  var el = brEl();
+  var t = document.getElementById("bTrazi");
+  if(t) t.oninput = function(){
+    bFilter = t.value;
+    var pos = t.selectionStart;
+    crtajBravu();
+    var n = document.getElementById("bTrazi");
+    if(n){ n.focus(); try{ n.setSelectionRange(pos, pos); }catch(x){} }
+  };
+  el.querySelectorAll("[data-ime]").forEach(function(b){
+    b.onclick = function(){ bIme = b.dataset.ime; bKorak = "nova"; crtajBravu(); fokusiraj("bL1"); };
+  });
+  var nema = document.getElementById("bNema");
+  if(nema) nema.onclick = function(){
+    var ime = window.prompt("Upiši svoje ime i prezime:", "");
+    if(!ime || !ime.trim()) return;
+    bIme = ime.trim(); bKorak = "nova"; crtajBravu(); fokusiraj("bL1");
+  };
+  var d = document.getElementById("bDalje");
+  if(d) d.onclick = function(){
+    var v = document.getElementById("bRucno").value.trim();
+    if(v.length < 3){ bPoruka("Upiši ime i prezime."); return; }
+    bIme = v; bKorak = "nova"; crtajBravu(); fokusiraj("bL1");
+  };
+  var sn = document.getElementById("bSnimi");
+  if(sn){
+    sn.onclick = napraviNalog;
+    var l2 = document.getElementById("bL2");
+    if(l2) l2.onkeydown = function(e){ if(e.key === "Enter") napraviNalog(); };
+  }
+  var nz = document.getElementById("bNazad");
+  if(nz) nz.onclick = function(){ bKorak = "izbor"; crtajBravu(); };
+  var u = document.getElementById("bUdji");
+  if(u){
+    u.onclick = pokusajUlaz;
+    var l = document.getElementById("bL");
+    if(l) l.onkeydown = function(e){ if(e.key === "Enter") pokusajUlaz(); };
+    fokusiraj("bL");
+  }
+  var z = document.getElementById("bZab");
+  if(z) z.onclick = function(){ bKorak = "zabor"; crtajBravu(); };
+  var od = document.getElementById("bOdust");
+  if(od) od.onclick = function(){ bKorak = "ulaz"; bPokusaj = 0; crtajBravu(); };
+  var ob = document.getElementById("bObrisi");
+  if(ob) ob.onclick = function(){
+    if(!window.confirm("Obrisati sve na ovom uređaju — prijavu, raspored, učenike, evidenciju i bilješke?")) return;
+    if(!window.confirm("Sigurno? Ovo se ne može vratiti osim iz sigurnosne kopije.")) return;
+    obrisiSve();
+  };
+}
+function napraviNalog(){
+  if(bRadi) return;
+  var l1 = document.getElementById("bL1").value, l2 = document.getElementById("bL2").value;
+  if(l1.length < 4){ bPoruka("Lozinka mora imati bar 4 znaka."); return; }
+  if(l1 !== l2){ bPoruka("Lozinke se ne poklapaju."); return; }
+  bZauzet(true); bPoruka("Trenutak…", true);
+  var so = nasumicno(16);
+  hesiraj(l1, so).then(function(x){
+    var n = nadjiNastavnika(bIme);
+    NALOG = {ime:bIme, predmet:(n && n.predmet) || "", alg:x.alg, sol:so, hes:x.hes, trazi:1, spisak:n?1:0};
+    pisi("skola-nalog", NALOG);
+    if(n && praznRaspored()) primijeniSpisak(n, true);
+    if(!MOJ.ime){ MOJ.ime = NALOG.ime; MOJ.predmet = NALOG.predmet; pisi("skola-moj", MOJ); }
+    oznaciSesiju();
+    bZauzet(false);
+    otkljucaj();
+  });
+}
+function pokusajUlaz(){
+  if(bRadi) return;
+  var el = document.getElementById("bL"), l = el.value;
+  if(!l){ bPoruka("Upiši lozinku."); return; }
+  bZauzet(true); bPoruka("Trenutak…", true);
+  provjeriLoz(l, NALOG).then(function(ok){
+    bZauzet(false);
+    if(ok){ oznaciSesiju(); otkljucaj(); return; }
+    bPokusaj++;
+    el.value = "";
+    bPoruka(bPokusaj >= 3 ? "Pogrešna lozinka. Pokušaja: " + bPokusaj + "." : "Pogrešna lozinka.");
+    el.focus();
+  });
+}
+function obrisiSve(){
+  KLJUCEVI.forEach(function(k){ try{ window.localStorage.removeItem(k); }catch(e){} });
+  brisiSesiju();
+  window.location.reload();
+}
+function otkljucaj(){
+  brEl().style.display = "none";
+  brEl().innerHTML = "";
+  document.body.classList.remove("zakljucano");
+  pokreni();
+}
+function zakljucaj(){
+  brisiSesiju();
+  window.location.reload();
+}
+
+/* ---------- prijava u podešavanjima ---------- */
+function crtajNalog(){
+  var s = document.getElementById("nStanje");
+  if(!s) return;
+  if(!NALOG){ s.textContent = "Na ovom uređaju nema prijave."; return; }
+  s.textContent = "Prijavljen: " + NALOG.ime + (NALOG.predmet ? " · " + NALOG.predmet : "") +
+    ". Lozinka i podaci stoje samo na ovom uređaju — na drugom se prijavljuješ iznova, " +
+    "a bilješke i evidenciju prenosiš sigurnosnom kopijom.";
+  document.querySelectorAll("#nTrazi button").forEach(function(b){
+    b.setAttribute("aria-selected", (+b.dataset.t) === (NALOG.trazi === 0 ? 0 : 1));
+  });
+  var o = document.getElementById("nOsvjezi");
+  if(o) o.style.display = nadjiNastavnika(NALOG.ime) ? "" : "none";
+}
+document.querySelectorAll("#nTrazi button").forEach(function(b){
+  b.onclick = function(){
+    if(!NALOG) return;
+    NALOG.trazi = +b.dataset.t;
+    pisi("skola-nalog", NALOG);
+    crtajNalog();
+    toast(NALOG.trazi ? "Lozinka se traži pri svakom otvaranju" : "Lozinka se traži samo prvi put");
+  };
+});
+document.getElementById("nZakljucaj").onclick = function(){
+  if(!NALOG){ toast("Nema prijave"); return; }
+  zakljucaj();
+};
+document.getElementById("nOsvjezi").onclick = function(){
+  var n = NALOG && nadjiNastavnika(NALOG.ime);
+  if(!n){ toast("Tvoje ime nije na spisku"); return; }
+  if(!window.confirm("Vratiti zvanični raspored za " + n.ime + "?\n\nTvoje izmjene rasporeda biće zamijenjene. Bilješke, učenici i plan ostaju.")) return;
+  primijeniSpisak(n);
+  crtaj(); crtajZivo(); crtajBilj();
+  if(edit) crtajIzmjenu();
+  toast("Raspored vraćen sa spiska");
+};
+document.getElementById("nLoz").onclick = function(){
+  if(!NALOG){ toast("Nema prijave"); return; }
+  var st = window.prompt("Upiši staru lozinku:");
+  if(st === null) return;
+  provjeriLoz(st, NALOG).then(function(ok){
+    if(!ok){ toast("Pogrešna stara lozinka"); return; }
+    var n1 = window.prompt("Nova lozinka (najmanje 4 znaka):");
+    if(n1 === null) return;
+    if(n1.length < 4){ toast("Prekratka lozinka"); return; }
+    var n2 = window.prompt("Ponovi novu lozinku:");
+    if(n2 !== n1){ toast("Lozinke se ne poklapaju"); return; }
+    var so = nasumicno(16);
+    hesiraj(n1, so).then(function(x){
+      NALOG.alg = x.alg; NALOG.sol = so; NALOG.hes = x.hes;
+      pisi("skola-nalog", NALOG);
+      toast("Lozinka promijenjena");
+    });
+  });
+};
 /* ---------- dijeljenje ---------- */
-var VERZIJA = "2.9 · 16.11.2026.";
+var VERZIJA = "3.0 · 16.11.2026.";
 document.getElementById("verzija").textContent = "Raspored časova " + VERZIJA;
 
 (function(){
@@ -2670,6 +3126,15 @@ window.addEventListener("appinstalled", function(){
 });
 
 ucitaj();
+
+var KLJUCEVI = ["skola-v2","skola-nerad","skola-biljeske","skola-ucenici","skola-evidencija",
+  "skola-ubiljeske","skola-plan","skola-napredak","skola-moj","skola-skraceni","skola-konf",
+  "skola-zvona","skola-rotacija","skola-tema","skola-zadaci","skola-pocetak","skola-pomak",
+  "skola-rucno","skola-preskoceni","skola-nalog"];
+
+function pokreni(){
+if(pokrenuto) return;
+pokrenuto = true;
 document.getElementById("nDatum").value = kljuc(new Date());
 document.getElementById("zaDatum").value = kljuc(new Date());
 document.getElementById("mIme").value = MOJ.ime || "";
@@ -2683,6 +3148,7 @@ crtajKonf();
 crtaj();
 crtajZivo();
 crtajBilj();
+crtajNalog();
 
 var zadnjiMin = -1;
 setInterval(function(){
@@ -2692,13 +3158,18 @@ setInterval(function(){
   if(m !== zadnjiMin){ zadnjiMin = m; if(!edit) crtaj(); }
 }, 1000);
 
-if("serviceWorker" in navigator && location.protocol === "https:"){
-  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
-}
-
 document.addEventListener("visibilitychange", function(){
   if(!document.hidden){ crtajZivo(); if(!edit) crtaj(); }
 });
+}
+
+if(!NALOG){ bKorak = "izbor"; crtajBravu(); }
+else if(trebaZakljucati()){ bKorak = "ulaz"; crtajBravu(); }
+else { oznaciSesiju(); otkljucaj(); }
+
+if("serviceWorker" in navigator && location.protocol === "https:"){
+ window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
 </script>
 </body>
 </html>
