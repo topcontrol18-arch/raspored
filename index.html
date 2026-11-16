@@ -87,6 +87,8 @@ h1 span{display:block;font-size:12.5px;font-weight:450;color:var(--kreda-2);marg
 .traka-red .oz{margin-left:2px}
 .traka-red.zadaci{border-left-color:var(--odmor);background:var(--odmor-bg);color:var(--odmor)}
 .traka-red.zadaci b{color:var(--odmor)}
+.traka-red.sada{border-left-color:var(--cas);background:var(--cas-bg);color:var(--ink)}
+.traka-red.sada b{color:var(--cas)}
 .traka-red.smjena{border-left-color:var(--cas);background:var(--cas-bg);color:var(--cas)}
 .traka-red.smjena b{color:var(--cas)}
 .pocetak{background:var(--list);border:1px solid var(--linija);border-radius:10px;padding:18px 16px}
@@ -378,6 +380,44 @@ details[open] summary::before{content:"–"}
 .bpotpis{margin-top:30px;font-size:12px;color:var(--ink-4);text-align:center}
 .bpotpis a{color:var(--ink-3);text-decoration:none;border-bottom:1px solid var(--linija)}
 
+/* ---------- široki ekran ---------- */
+@media(min-width:721px){
+  .grid{margin-top:18px;background:none;border:0;border-radius:0;overflow:visible}
+  table{border-collapse:separate;border-spacing:7px}
+  thead th{background:transparent;border-bottom:0;padding:0 2px 4px;vertical-align:bottom}
+  thead th:first-child{width:34px}
+  thead th.dnes{box-shadow:none}
+  thead th .dan{font-size:15px;font-weight:650}
+  thead th.dnes .dan{color:var(--cas)}
+  thead th .sm{margin-top:3px}
+  thead th.dnes .sm{color:var(--cas);opacity:.8}
+  tbody th{width:34px;border:0;color:var(--ink-4);font-size:12px;vertical-align:middle;padding:0}
+  tbody td{border:0;padding:0;height:1px}
+  td.dnes{background:none}
+  .cell{min-height:62px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;
+    justify-content:center}
+  .cell.pun{background:var(--list);border:1px solid var(--linija);border-radius:9px;
+    margin:0;padding:10px 12px;box-shadow:0 1px 1px rgba(27,36,32,.03)}
+  .cell.pun:hover{background:var(--list);border-color:var(--ink-4);box-shadow:0 2px 6px rgba(27,36,32,.07)}
+  td.dnes .cell.pun{border-color:var(--cas-ivica)}
+  .cell .ime{font-size:15px}
+  .cell .vr{font-size:11.5px;margin-top:3px}
+  .cell.prazno{padding:10px 12px;border:1px solid transparent;opacity:1}
+  .cell.prazno .vr{color:var(--ink-4);opacity:.75;margin-top:0}
+  .cell.sada,.cell.sada:hover{background:var(--cas);border-color:var(--cas);
+    box-shadow:0 2px 10px rgba(47,107,82,.26)}
+  th.granica,td.granica{border-left:1px solid var(--linija)!important;padding-left:9px!important}
+  td.granica .cell{margin-left:2px}
+}
+@media(min-width:1080px){
+  .wrap{max-width:1140px}
+  .cell{min-height:70px}
+  .cell .ime{font-size:16px}
+  h1{font-size:20px}
+  main>details>*:not(summary){max-width:840px}
+  #bilj{max-width:840px}
+}
+
 /* ---------- prijava ---------- */
 .toast{z-index:300}
 body.zakljucano>header,body.zakljucano>main,body.zakljucano>footer{display:none!important}
@@ -543,6 +583,7 @@ body.zakljucano>header,body.zakljucano>main,body.zakljucano>footer{display:none!
       <button class="btn" id="nLoz">Promijeni lozinku</button>
       <button class="btn" id="nZakljucaj">Zaključaj sada</button>
       <button class="btn" id="nOsvjezi" style="display:none">Vrati raspored sa spiska</button>
+      <button class="btn" id="nOdjava">Odjavi se</button>
     </div>
 
     <div class="ured"><button class="btn" id="mReset">Obriši sve i počni ispočetka</button></div>
@@ -1379,7 +1420,11 @@ function crtajZivo(){
 
   /* kratko stanje kad nema časa u toku */
   var stanjeRed = "";
-  if(s.tip === "odmor")
+  if(s.tip === "cas")
+    stanjeRed = "<b>" + s.cas.br + ". čas</b> · " + esc(s.cas.ime) + " · " + s.cas.od + "–" + s.cas["do"] +
+                " · zvoni za <b>" + odbroj(s.ostalo) + "</b>" +
+                (s.sljedeci ? " · zatim " + esc(s.sljedeci.ime) + " u " + s.sljedeci.od : " · poslije ovog si gotov");
+  else if(s.tip === "odmor")
     stanjeRed = (s.prvi ? "Nastava počinje u " + s.cilj.od : "Odmor do " + s.cilj.od) +
                 " · <b>" + esc(s.cilj.ime) + "</b> za " + odbroj(s.ostalo);
   else if(s.tip === "kraj")
@@ -1390,7 +1435,7 @@ function crtajZivo(){
   else if(s.tip === "slobodan")
     stanjeRed = (s.dk ? "Danas nemaš nastavu" : "Vikend") +
                 (s.dalje ? " · " + s.dalje.dan.toLowerCase() + " u " + s.dalje.lista[0].od : "");
-  if(stanjeRed) redovi += '<div class="traka-red">' + stanjeRed + '</div>';
+  if(stanjeRed) redovi += '<div class="traka-red'+(s.tip==="cas"?" sada":"")+'">' + stanjeRed + '</div>';
 
   document.getElementById("zivo").innerHTML = redovi;
 
@@ -2017,9 +2062,12 @@ function crtaj(){
   var stopDanas = !!neradan(now);
   var t = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
 
+  var smjene = DANI.map(function(d){ return smenaNa(d[0], datumDana(d[0])); });
+  function granica(k){ return k > 0 && smjene[k] !== smjene[k-1] ? " granica" : ""; }
+
   var h = '<thead><tr><th></th>';
-  DANI.forEach(function(d){
-    h += '<th class="'+(d[0]===dnes?"dnes":"")+'"><div class="dan">'+d[1]+'</div>' +
+  DANI.forEach(function(d, k){
+    h += '<th class="'+(d[0]===dnes?"dnes":"")+granica(k)+'"><div class="dan">'+d[1]+'</div>' +
          '<div class="sm">'+(d[0]===dnes&&stopDanas ? "neradan dan" :
              SMENA[smenaNa(d[0], datumDana(d[0]))] + (skraceni(datumDana(d[0])) ? " · skraćeni" : ""))+'</div></th>';
   });
@@ -2034,7 +2082,7 @@ function crtaj(){
       var ime = R[d[0]].casovi[r] || "";
       var dan = (d[0] === dnes);
       var sada = dan && !stopDanas && ime && bl && t >= sek(bl[0]) && t < sek(bl[1]);
-      var kl = (dan?"dnes":"") + (dan && stopDanas ? " stop" : "");
+      var kl = (dan?"dnes":"") + (dan && stopDanas ? " stop" : "") + granica(DANI.indexOf(d));
       var jedT = "";
       if(ime && !(dan && stopDanas) && !neradan(datumDana(d[0]))){
         var jx = jedinicaCasa(ime, datumDana(d[0]), r);
@@ -3209,6 +3257,26 @@ document.querySelectorAll("#kopAuto button").forEach(function(b){
   };
 });
 
+document.getElementById("nOdjava").onclick = function(){
+  if(!NALOG){ toast("Nema prijave"); return; }
+  var naServeru = kopMoze() && !!KOP.kada;
+  var pitanje = naServeru
+    ? "Odjaviti " + NALOG.ime + " sa ovog uređaja?\n\n" +
+      "Podaci se brišu odavde, ali ostaju u šifrovanoj kopiji na serveru — " +
+      "vraćaš ih imenom i lozinkom na bilo kom uređaju."
+    : "Odjaviti " + NALOG.ime + "?\n\n" +
+      "Na serveru NEMA kopije, pa se sve sa ovog uređaja briše bez povratka.\n\n" +
+      "Bolje odustani, pa prvo snimi kopiju.";
+  if(!window.confirm(pitanje)) return;
+  if(!naServeru && !window.confirm("Sigurno? Ovo se ne može vratiti.")) return;
+  if(naServeru && kljucevi){
+    toast("Šaljem posljednju kopiju…");
+    kopPosalji(false).catch(function(){}).then(function(){ obrisiSve(); });
+    return;
+  }
+  obrisiSve();
+};
+
 document.getElementById("nLoz").onclick = function(){
   if(!NALOG){ toast("Nema prijave"); return; }
   var st = window.prompt("Upiši staru lozinku:");
@@ -3394,7 +3462,7 @@ function crtajKop(){
 }
 
 /* ---------- dijeljenje ---------- */
-var VERZIJA = "3.1 · 16.11.2026.";
+var VERZIJA = "3.2 · 17.11.2026.";
 document.getElementById("verzija").textContent = "Raspored časova " + VERZIJA;
 
 (function(){
