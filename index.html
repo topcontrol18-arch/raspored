@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Moj raspored časova</title>
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#27463A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -369,6 +370,14 @@ details[open] summary::before{content:"–"}
   .cell.sada .ime{color:#000}.cell.sada .vr{color:#555}
   thead th.dnes,td.dnes{background:#fff!important;box-shadow:none}
 }
+.potpis{padding:4px 0 30px;text-align:center;line-height:1.7}
+.potpis #verzija{font-size:12px;color:var(--ink-4)}
+.potpis .autor{font-size:12px;color:var(--ink-3)}
+.potpis .autor a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--linija);font-weight:600}
+.potpis .autor a:hover{color:var(--cas);border-bottom-color:var(--cas)}
+.bpotpis{margin-top:30px;font-size:12px;color:var(--ink-4);text-align:center}
+.bpotpis a{color:var(--ink-3);text-decoration:none;border-bottom:1px solid var(--linija)}
+
 /* ---------- prijava ---------- */
 .toast{z-index:300}
 body.zakljucano>header,body.zakljucano>main,body.zakljucano>footer{display:none!important}
@@ -567,7 +576,10 @@ body.zakljucano>header,body.zakljucano>main,body.zakljucano>footer{display:none!
 
 </main>
 
-<div class="wrap" style="padding-bottom:26px"><div class="upom" id="verzija" style="text-align:center"></div></div>
+<footer class="wrap potpis">
+  <div id="verzija"></div>
+  <div class="autor">Napravio <a href="https://topcontrol.rs" target="_blank" rel="noopener">Top Control</a> · Novi Pazar</div>
+</footer>
 
 <div class="toast" id="toast"></div>
 
@@ -2863,7 +2875,8 @@ function crtajBravu(){
   else if(bKorak === "nova")  h += bEkranNova();
   else if(bKorak === "ulaz")  h += bEkranUlaz();
   else if(bKorak === "zabor") h += bEkranZabor();
-  el.innerHTML = h + '</div>';
+  el.innerHTML = h +
+    '<div class="bpotpis">Napravio <a href="https://topcontrol.rs" target="_blank" rel="noopener">Top Control</a> · Novi Pazar</div></div>';
   veziBravu();
 }
 function bEkranIzbor(){

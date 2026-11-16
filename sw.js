@@ -1,5 +1,5 @@
 /* Raspored časova — offline keš */
-var VERZIJA = "raspored-v31";
+var VERZIJA = "raspored-v32";
 var FAJLOVI = ["./", "./index.html", "./manifest.json", "./ikona-192.png", "./ikona-512.png"];
 
 self.addEventListener("install", function(e){
