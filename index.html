@@ -159,8 +159,8 @@ h1 span{display:block;font-size:12.5px;font-weight:450;color:var(--kreda-2);marg
   padding:8px 8px 8px 0;border-top:1px solid var(--linija-2);cursor:pointer;
   border-left:2px solid transparent;padding-left:8px;margin-left:-10px}
 .dcard li:first-child{border-top:0}
-.dcard li i{order:1;flex:0 0 46px;text-align:right;font-family:var(--mono);font-style:normal;
-  font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.dcard li i{order:1;flex:0 0 92px;text-align:right;font-family:var(--mono);font-style:normal;
+  font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .dcard li em{order:2;flex:0 0 16px;font-family:var(--mono);font-style:normal;font-size:11.5px;color:var(--ink-4)}
 .dcard li b{order:3;font-size:15.5px;font-weight:600;letter-spacing:-.01em}
 .dcard li.sada{background:var(--cas-bg);border-left-color:var(--cas);border-radius:0 var(--r) var(--r) 0}
@@ -171,10 +171,13 @@ h1 span{display:block;font-size:12.5px;font-weight:450;color:var(--kreda-2);marg
 .pauza-tr{order:3;margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--ink-4)}
 .dcard li.pauza.sada{background:var(--odmor-bg);border-left-color:var(--odmor)}
 .dcard li.pauza.sada b,.dcard li.pauza.sada i,.dcard li.pauza.sada .ostalo{color:var(--odmor)}
+.dcard li.kraj{cursor:default;padding-top:7px;padding-bottom:2px}
+.dcard li.kraj b{font-size:12.5px;font-weight:500;color:var(--ink-4);letter-spacing:.02em;text-transform:none}
+.dcard li.kraj i{color:var(--ink-4);font-size:12px}
 .dcard .nis{padding:4px 0 8px;color:var(--ink-4);font-size:14px}
 .ostalo{order:3;margin-left:auto;font-family:var(--mono);font-size:15px;font-weight:600;
   color:var(--cas);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.jed{order:4;flex:1 1 100%;margin-left:72px;font-size:12.5px;color:var(--ink-2);line-height:1.35}
+.jed{order:4;flex:1 1 100%;margin-left:118px;font-size:12.5px;color:var(--ink-2);line-height:1.35}
 .tacka{color:var(--odmor)}
 
 .dantabs{display:flex;gap:6px;overflow-x:auto;padding:0 0 4px;margin:0 -16px 4px;
@@ -382,6 +385,9 @@ details[open] summary::before{content:"–"}
 .potpis .autor a:hover{color:var(--cas);border-bottom-color:var(--cas)}
 .bpotpis{margin-top:30px;font-size:12px;color:var(--ink-4);text-align:center}
 .bpotpis a{color:var(--ink-3);text-decoration:none;border-bottom:1px solid var(--linija)}
+
+::placeholder{color:var(--ink-4);opacity:1;font-style:italic}
+textarea::placeholder{line-height:1.6}
 
 /* ---------- široki ekran ---------- */
 @media(min-width:721px){
@@ -1689,11 +1695,29 @@ function crtajGradivo(el, glava){
       'tip časa ide iza uspravne crte (O obrada, U utvrđivanje, V vježba, P provjera, UČ uvodni čas), ' +
       'a red koji počinje sa # ili je samo naziv mjeseca dijeli plan na mjesece.</div>';
     document.getElementById("gSacuvaj").onclick = function(){
-      var nova = citajPlan(document.getElementById("gText").value);
-      if(nova.length) P[r] = nova; else delete P[r];
-      pisi("skola-plan", P);
-      uredi = false; crtajUcenici();
-      toast(nova.length ? nova.length + " časova u planu" : "Plan obrisan");
+      var tekst = document.getElementById("gText").value;
+      var nova = citajPlan(tekst);
+      if(nova.length){
+        P[r] = nova; pisi("skola-plan", P);
+        uredi = false; crtajUcenici();
+        toast(nova.length + " časova u planu");
+        return;
+      }
+      if(!tekst.trim()){
+        if(!pl.length){
+          toast("Polje je prazno — nalijepi plan pa snimi");
+          var pr = document.getElementById("gText");
+          if(pr) pr.focus();
+          return;
+        }
+        if(!window.confirm("Polje je prazno.\n\nObrisati plan za " + r + " razred? U njemu je " +
+                           pl.length + " časova.")) return;
+        delete P[r]; pisi("skola-plan", P);
+        uredi = false; crtajUcenici();
+        toast("Plan obrisan");
+        return;
+      }
+      toast("Nisam prepoznao nijedan čas — plan nije mijenjan");
     };
     var go = document.getElementById("gOdustani");
     if(go) go.onclick = function(){ uredi = false; crtajUcenici(); };
@@ -2133,11 +2157,11 @@ function crtaj(){
         var pauza = x.a - prethodni.z;
         var prazno = x.br - prethodni.br - 1;
         if(prazno > 0){
-          redovi.push('<li class="pauza"><i>'+prethodni["do"]+'</i><em></em><b>prozor</b>' +
+          redovi.push('<li class="pauza"><i>'+prethodni["do"]+'–'+x.od+'</i><em></em><b>pauza</b>' +
             '<span class="pauza-tr">'+prazno+(prazno===1?" čas":" časa")+' · '+Math.round(pauza/60)+' min</span></li>');
         } else if(pauza >= 15*60){
           var sadaP = (dan && !stop && t >= prethodni.z && t < x.a);
-          redovi.push('<li class="pauza'+(sadaP?" sada":"")+'"><i>'+prethodni["do"]+'</i><em></em><b>veliki odmor</b>' +
+          redovi.push('<li class="pauza'+(sadaP?" sada":"")+'"><i>'+prethodni["do"]+'–'+x.od+'</i><em></em><b>veliki odmor</b>' +
             '<span class="pauza-tr">'+Math.round(pauza/60)+' min</span>' +
             (sadaP ? '<span class="ostalo" id="liOstalo"></span>' : '') + '</li>');
         }
@@ -2152,10 +2176,13 @@ function crtaj(){
         jed = opisJedinice(jy);
       }
       redovi.push('<li'+(sada?' class="sada"':'')+' data-odj="'+esc(x.ime)+'"><em>'+x.br+'.</em><b>'+esc(x.ime)+
-        (B[x.ime]?' <span class="tacka">•</span>':'')+'</b><i>'+x.od+'</i>' +
+        (B[x.ime]?' <span class="tacka">•</span>':'')+'</b><i>'+x.od+'–'+x["do"]+'</i>' +
         (sada ? '<span class="ostalo" id="liOstalo"></span>' : '') +
         (jed ? '<span class="jed">'+esc(jed)+'</span>' : '') + '</li>');
     });
+
+    if(lista.length)
+      redovi.push('<li class="kraj"><i>'+lista[lista.length-1]["do"]+'</i><em></em><b>kraj nastave</b></li>');
 
     m += lista.length ? '<ol>' + redovi.join("") + '</ol>' : '<div class="nis">nema časova</div>';
     m += '</div>';
@@ -2348,6 +2375,10 @@ function crtajPlanove(){
     document.getElementById("pPrepoznaj").onclick = function(){
       var t = document.getElementById("pText").value;
       if(!t.trim()){
+        var koliko = (P[planUredi] || []).length;
+        if(!koliko){ toast("Polje je prazno — nalijepi plan pa snimi"); return; }
+        if(!window.confirm("Polje je prazno.\n\nObrisati plan za " + planUredi + " razred? U njemu je " +
+                           koliko + " časova.")) return;
         delete P[planUredi]; pisi("skola-plan", P);
         toast("Plan obrisan"); planUredi = ""; crtajPlanove(); crtaj(); crtajZivo(); return;
       }
@@ -3473,7 +3504,7 @@ function crtajKop(){
 }
 
 /* ---------- dijeljenje ---------- */
-var VERZIJA = "3.3 · 17.11.2026.";
+var VERZIJA = "3.5 · 17.11.2026.";
 document.getElementById("verzija").textContent = "Raspored časova " + VERZIJA;
 
 (function(){
