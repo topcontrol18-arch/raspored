@@ -3558,7 +3558,18 @@ else if(trebaZakljucati()){ bKorak = "ulaz"; crtajBravu(); }
 else { oznaciSesiju(); otkljucaj(); }
 
 if("serviceWorker" in navigator && location.protocol === "https:"){
- window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+ window.addEventListener("load", function(){
+   navigator.serviceWorker.register("sw.js").then(function(r){
+     r.update();                                   /* uvijek provjeri ima li novija verzija */
+     r.addEventListener("updatefound", function(){
+       var n = r.installing;
+       if(!n) return;
+       n.addEventListener("statechange", function(){
+         if(n.state === "activated" && navigator.serviceWorker.controller) location.reload();
+       });
+     });
+   }).catch(function(){});
+ });
 }
 </script>
 </body>
