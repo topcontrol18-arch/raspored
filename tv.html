@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hodnik — OŠ „Vuk Karadžić"</title>
+<style>
+/* ══════════════════════════════════════════════════════════
+   Ekran za hodnik ispred zbornice.
+   Radi bez interneta. Sve što se mijenja stoji u bloku PODESI
+   na dnu fajla — ime škole, dežurstva i obavještenja.
+   ══════════════════════════════════════════════════════════ */
+/* svijetla tema — za osvijetljen hodnik (podrazumijevano) */
+:root{
+  --crna:#EDF0F4; --ploca:#FFFFFF; --ploca-2:#F4F7FA;
+  --linija:#D8DEE6; --linija-2:#E9EDF2;
+  --bijela:#0D131A; --siva:#5A6672; --siva-2:#8A96A3;
+  --plava:#1552C4; --plava-tiha:#E2EAF9;
+  --zuta:#9C640F; --zuta-tiha:#FAF0DC;
+  --zelena:#13764F;
+  --sjena:0 1px 2px rgba(13,19,26,.05), 0 6px 18px rgba(13,19,26,.05);
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono","Roboto Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+/* tamna tema — za hodnik bez prozora ili uveče; uključuje se u bloku PODESI */
+:root[data-tema="tamna"]{
+  --crna:#070B10; --ploca:#0E141C; --ploca-2:#131B25;
+  --linija:#1E2833; --linija-2:#161E27;
+  --bijela:#EEF3F8; --siva:#8FA0B2; --siva-2:#5C6B7A;
+  --plava:#3B82F6; --plava-tiha:#18283F;
+  --zuta:#E8A93C; --zuta-tiha:#2A2214;
+  --zelena:#34C98A;
+  --sjena:none;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:calc(100vh / 58)}
+body{background:var(--crna);color:var(--bijela);font-family:var(--sans);
+  height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased}
+
+/* blagi pomak protiv utiskivanja slike u TV */
+.ekran{height:100vh;padding:1.9rem 2.4rem;display:flex;flex-direction:column;gap:1.5rem;
+  transition:transform 40s linear}
+
+/* ── zaglavlje ── */
+header{display:flex;align-items:center;justify-content:space-between;flex:none}
+.znak{display:flex;align-items:center;gap:1.1rem}
+.znak img{height:4.2rem;width:auto;display:block}
+.grb{width:4.2rem;height:4.2rem;border-radius:0.5rem;background:var(--ploca-2);
+  border:1px solid var(--linija);display:grid;place-items:center;
+  font-family:var(--mono);font-size:1.5rem;font-weight:700;color:var(--siva);letter-spacing:-.04em}
+.znak b{display:block;font-size:1.9rem;font-weight:700;letter-spacing:-.015em;line-height:1.1}
+.znak span{display:block;font-size:1.02rem;color:var(--siva);letter-spacing:.22em;margin-top:.22rem}
+.casovnik{text-align:right;line-height:1}
+.casovnik .sat{font-family:var(--mono);font-size:4.1rem;font-weight:600;letter-spacing:-.045em;
+  font-variant-numeric:tabular-nums}
+.casovnik .sat i{font-style:normal;font-size:2.1rem;color:var(--siva-2);margin-left:.15rem}
+.casovnik .datum{font-size:1.05rem;color:var(--siva);margin-top:.5rem;letter-spacing:.01em}
+
+/* ── glavni dio ── */
+main{flex:1;display:grid;grid-template-columns:1.32fr 1fr;gap:1.5rem;min-height:0}
+
+.sada{background:var(--ploca);border:1px solid var(--linija);border-radius:1rem;
+  padding:2.1rem 2.3rem;display:flex;flex-direction:column;justify-content:center;min-height:0;
+  position:relative;overflow:hidden;box-shadow:var(--sjena)}
+.sada:before{content:"";position:absolute;left:0;top:0;bottom:0;width:.34rem;background:var(--plava)}
+.sada.odmor:before{background:var(--zuta)}
+.sada.mir:before{background:var(--siva-2)}
+
+.oznaka{font-size:1.25rem;letter-spacing:.2em;color:var(--siva);text-transform:uppercase;
+  font-weight:600}
+.sada.odmor .oznaka{color:var(--zuta)}
+.naslov{font-size:4.2rem;font-weight:700;letter-spacing:-.03em;line-height:1.02;margin-top:.5rem}
+.brojka{font-family:var(--mono);font-size:11.2rem;font-weight:600;line-height:.88;
+  letter-spacing:-.06em;font-variant-numeric:tabular-nums;margin:.9rem 0 .2rem;color:var(--plava)}
+.sada.odmor .brojka{color:var(--zuta)}
+.sada.mir .brojka{font-size:5.4rem;color:var(--bijela);letter-spacing:-.04em}
+.dozvona{font-size:1.3rem;color:var(--siva);letter-spacing:.02em}
+.zatim{margin-top:1.5rem;padding-top:1.1rem;border-top:1px solid var(--linija);
+  font-size:1.35rem;color:var(--siva);line-height:1.45}
+.zatim b{color:var(--bijela);font-weight:600}
+.paralela{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+.paralela span{font-size:1.02rem;color:var(--siva);background:var(--ploca-2);
+  border:1px solid var(--linija);border-radius:.4rem;padding:.35rem .75rem}
+.paralela span b{color:var(--bijela);font-weight:600}
+
+/* ── desna kolona ── */
+aside{display:flex;flex-direction:column;gap:1.5rem;min-height:0}
+.panel{background:var(--ploca);border:1px solid var(--linija);border-radius:1rem;
+  padding:1.3rem 1.5rem;min-height:0;display:flex;flex-direction:column;box-shadow:var(--sjena)}
+.panel h2{font-size:.98rem;letter-spacing:.2em;color:var(--siva-2);text-transform:uppercase;
+  font-weight:600;flex:none;display:flex;justify-content:space-between;align-items:baseline}
+.panel h2 em{font-style:normal;letter-spacing:.02em;text-transform:none;color:var(--siva);
+  font-size:1.02rem;font-weight:500}
+
+.zvona{flex:1;overflow:hidden}
+.zvona ol{list-style:none;margin-top:.7rem;flex:1;min-height:0;overflow:hidden;
+  font-size:var(--zv,1rem);display:flex;flex-direction:column;justify-content:space-between}
+.zvona li{display:flex;align-items:center;gap:.75em;padding:.26em 0;font-size:1.3em}
+.zvona li em{font-style:normal;font-family:var(--mono);font-size:.78em;color:var(--siva-2);
+  width:1.2em;flex:none}
+.zvona li b{font-family:var(--mono);font-weight:500;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;color:var(--siva)}
+.zvona li.sad{color:var(--plava)}
+.zvona li.sad em,.zvona li.sad b{color:var(--plava);font-weight:700}
+.zvona li.sad:after{content:"";width:.4em;height:.4em;border-radius:50%;background:var(--plava);
+  margin-left:auto;animation:kuc 2s ease-in-out infinite;flex:none}
+.zvona li.proslo{color:var(--siva-2);opacity:.5}
+.zvona li.proslo b{color:var(--siva-2)}
+.zvona li.veliki b{color:var(--zuta)}
+.zvona li.veliki{font-size:1.08em}
+.zvona li.veliki.sad b{color:var(--zuta)}
+.zvona li.veliki.sad:after{background:var(--zuta)}
+@keyframes kuc{0%,100%{opacity:1}50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.zvona li.sad:after{animation:none}}
+
+.dezurni{flex:1.15;overflow:hidden}
+.dezurni table{width:100%;border-collapse:collapse;margin-top:.7rem}
+.dezurni table{font-size:var(--dez,1rem)}
+.dezurni td{padding:.36em 0;font-size:1.2em;vertical-align:baseline;line-height:1.25}
+.dezurni td:first-child{color:var(--siva-2);font-size:.92em;letter-spacing:.11em;
+  text-transform:uppercase;width:7.4em;font-weight:600}
+.dezurni tr+tr td{border-top:1px solid var(--linija-2)}
+.dezurni .grupa{color:var(--siva);font-size:.92em;letter-spacing:.1em;text-transform:uppercase;
+  padding-top:.8em}
+.dezurni .nema{color:var(--siva-2);font-size:1.15rem;margin-top:.8rem}
+
+/* ── podnožje ── */
+footer{flex:none;display:flex;align-items:center;gap:1.6rem;
+  background:var(--ploca);border:1px solid var(--linija);border-radius:.8rem;
+  padding:.95rem 1.5rem;min-height:3.6rem;box-shadow:var(--sjena)}
+footer .oznak{font-size:.92rem;letter-spacing:.2em;color:var(--siva-2);text-transform:uppercase;
+  font-weight:600;flex:none}
+footer .tekst{flex:1;font-size:1.35rem;color:var(--bijela);overflow:hidden;white-space:nowrap;
+  text-overflow:ellipsis}
+footer .tekst.tiho{color:var(--siva)}
+footer .smjena-info{flex:none;font-size:1.1rem;color:var(--siva);border-left:1px solid var(--linija);
+  padding-left:1.6rem}
+footer .smjena-info b{color:var(--zuta);font-weight:600}
+</style>
+</head>
+<body>
+<div class="ekran" id="ekran">
+
+  <header>
+    <div class="znak">
+      <div class="grb" id="grb">VK</div>
+      <div>
+        <b id="imeSkole">OŠ „VUK KARADŽIĆ"</b>
+        <span id="mjesto">NOVI PAZAR</span>
+      </div>
+    </div>
+    <div class="casovnik">
+      <div class="sat"><span id="sat">--:--</span><i id="sek">00</i></div>
+      <div class="datum" id="datum">—</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="sada" id="sada">
+      <div class="oznaka" id="oznaka">—</div>
+      <div class="naslov" id="naslov">—</div>
+      <div class="brojka" id="brojka">—</div>
+      <div class="dozvona" id="dozvona"></div>
+      <div class="paralela" id="paralela"></div>
+      <div class="zatim" id="zatim"></div>
+    </section>
+
+    <aside>
+      <section class="panel zvona">
+        <h2>Raspored zvona <em id="zvonaSmjena">—</em></h2>
+        <ol id="zvonaLista"></ol>
+      </section>
+      <section class="panel dezurni">
+        <h2>Dežurni danas <em id="dezurniDan">—</em></h2>
+        <div id="dezurniSadrzaj" style="flex:1;min-height:0;overflow:hidden"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer>
+    <div class="oznak">Obavještenje</div>
+    <div class="tekst" id="poruka">—</div>
+    <div class="smjena-info" id="promjenaSmjene"></div>
+  </footer>
+
+</div>
+
+<script>
+"use strict";
+/* ══════════════════════════════════════════════════════════════════════
+   PODESI — jedino ovo mijenjaš
+   ══════════════════════════════════════════════════════════════════════ */
+
+var TEMA    = "svijetla";          /* "svijetla" ili "tamna" */
+var SKOLA   = "OŠ \u201eVUK KARADŽIĆ\u201c";
+var MJESTO  = "NOVI PAZAR";
+
+/* Logo: stavi fajl logo.png pored ovog fajla i pojaviće se sam.
+   Dok ga nema, stoji slovni znak. */
+
+/* Obavještenja koja se smjenjuju u dnu ekrana (svako po 12 sekundi).
+   Ostavi prazan spisak [] ako ne treba ništa. */
+var PORUKE = [
+  "Dobro došli u OŠ \u201eVuk Karadžić\u201c",
+  "Raspored pismenih zadataka je na oglasnoj tabli u zbornici",
+  "Izostanke pravdati razrednom starješini u roku od 8 dana"
+];
+
+/* Smjene po mjesecima. Mijenjaju se prvog ponedjeljka poslije 1. u mjesecu.
+   Novembar 2026: I smjena = VI i VIII, II smjena = V i VII. */
+var RAZREDI = {
+  I:  "IV, VI i VIII razred",
+  M:  "I i II razred",
+  II: "III, V i VII razred"
+};
+var RAZREDI_OBRNUTO = {           /* kad se smjene okrenu */
+  I:  "III, V i VII razred",
+  M:  "I i II razred",
+  II: "IV, VI i VIII razred"
+};
+/* Referentni mjesec u kojem važi RAZREDI (godina, mjesec 0–11). Novembar 2026. */
+var REF = {g:2026, m:10};
+
+/* Zvonjava — zvanična, iz obavještenja direktora.
+   poc = početak, cas = trajanje časa, odmor = mali odmor,
+   veliki = veliki odmor, poslije = poslije kojeg časa je veliki, broj = broj časova */
+var ZVONA = {
+  I:  {ime:"I smjena",   poc:"07:00", cas:45, odmor:5, veliki:20, poslije:2, broj:7},
+  M:  {ime:"Međusmjena", poc:"11:25", cas:45, odmor:5, veliki:20, poslije:1, broj:4},
+  II: {ime:"II smjena",  poc:"13:20", cas:45, odmor:5, veliki:20, poslije:3, broj:7}
+};
+
+/* Dežurstvo. Dan: 1 = ponedjeljak … 5 = petak.
+   smjena: "I", "M" ili "II" — prikazuje se samo ono što je trenutno na redu. */
+var DEZURSTVO = [
+ {smjena:"I", grupa:"6. i 8. razred", mjesta:{
+   "ULAZ":      ["Ajla Trtovac","Lejla Pluncević","Muhedin Ljajić","Mirela Ferizović","Farisa Bajramlić"],
+   "DVORIŠTE":  ["Amina Hamidović","Muhedin Kačar","Ajtena Redžović","Ajla Hrvaćanin","Enisa Jusufović"],
+   "DVORIŠTE ": ["Ivana Mojović","Harisa Bajramlić-Berberištanin","Dženan Škrijelj","Irma Papić","Amina Islamović"],
+   "LAMELA A":  ["Fahrudin Mustafić","Amela Delić","Emina Delimeđac","Anisa Vatić","Sabina Azemović"],
+   "LAMELA B":  ["Edin Korićanin","Envera Suljić","Dženan Totić","Aida Brničanin","Ifeta Totić"]
+ }},
+ {smjena:"I", grupa:"4. razred", mjesta:{
+   "ULAZ": ["Alma Salihović","Dženita Suvodolac","Selma Ličina","Suada Kučević","Maja Džigal"],
+   "HOL":  ["Altuna Kalić","Senada Tokalić","Šefka Ljajić","Milka Marić","Elvira Hazirović"]
+ }},
+ {smjena:"II", grupa:"5. i 7. razred", mjesta:{
+   "ULAZ":      ["Adil Ličina","Indira Brunčević","Hana Župić","Alma Rizvanović","Amina Radetinac"],
+   "DVORIŠTE":  ["Almasa Kurahović","Antonina Minić","Selma Biberović","Mladen Timotijević","Lejla Hajrović"],
+   "DVORIŠTE ": ["Amina Jerebičanin","Dženita Murić","Seniha Vejselović","Haris Dugopoljac","Dušica Martić"],
+   "LAMELA A":  ["Asmir Hodžić","Mirsada Preljević","Hasib Ukić","Elvis Divanefendić","Emina Kahrović"],
+   "LAMELA B":  ["Minela Ziljkić","Azemina Bojadžić","Birsena Hasanović","Azra Baćićanin","Azra Ganić"]
+ }},
+ {smjena:"II", grupa:"3. razred", mjesta:{
+   "ULAZ": ["Lidija Hazirović","Mejrema Gicić","Aida Kurtanović","Maida Mustafić","Ilhana Pešković"],
+   "HOL":  ["Nezrina Džudžević","Ajsela Hadžinumanović","Nermina Ahmetović","Šefika Hodžić","Razija Zeković"]
+ }},
+ {smjena:"M", grupa:"1. i 2. razred", mjesta:{
+   "ULAZ": ["Samra Aličković","Ajla Demirović","Alma Bećirović","Azra Cetin","Irma Leković"],
+   "HOL":  ["Indira Azemović","Senada Bondžuković","Adisa Masličić","Zuhra Lukač","Mersiha Čarovac"]
+ }}
+];
+
+/* Dani kad nema nastave: "2026-12-31": "zimski raspust" */
+var NERADNI = {};
+
+/* ══════════════════════════════════════════════════════════════════════
+   Odavde nadalje nema šta da se mijenja
+   ══════════════════════════════════════════════════════════════════════ */
+
+var DANI = ["nedjelja","ponedjeljak","utorak","srijeda","četvrtak","petak","subota"];
+var MJESECI = ["januara","februara","marta","aprila","maja","juna",
+               "jula","avgusta","septembra","oktobra","novembra","decembra"];
+
+function dva(n){ return (n < 10 ? "0" : "") + n; }
+function uSek(hhmm){ var d = hhmm.split(":"); return (+d[0]) * 3600 + (+d[1]) * 60; }
+function uSat(s){ s = ((s % 86400) + 86400) % 86400; return dva(Math.floor(s/3600)) + ":" + dva(Math.floor(s/60) % 60); }
+function odbroj(s){
+  if(s < 0) s = 0;
+  var h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, k = s % 60;
+  return h ? h + ":" + dva(m) + ":" + dva(k) : dva(m) + ":" + dva(k);
+}
+function kljucDatuma(d){ return d.getFullYear() + "-" + dva(d.getMonth()+1) + "-" + dva(d.getDate()); }
+
+/* ── termini jedne smjene ── */
+function termini(k){
+  var z = ZVONA[k], t = uSek(z.poc), lista = [];
+  for(var i = 1; i <= z.broj; i++){
+    lista.push({br:i, a:t, z:t + z.cas * 60});
+    t += z.cas * 60 + (i === z.poslije ? z.veliki : z.odmor) * 60;
+  }
+  return lista;
+}
+
+/* ── rotacija smjena: prvi ponedjeljak poslije 1. u mjesecu ── */
+function ponedjeljakPromjene(g, m){
+  var prvi = new Date(g, m, 1), w = prvi.getDay();
+  if(w === 1) return prvi;
+  if(w === 2) return new Date(g, m, 0);
+  var dana = (8 - w) % 7; if(dana === 0) dana = 7;
+  return new Date(g, m, 1 + dana);
+}
+function indeksPerioda(dat){
+  var g = dat.getFullYear(), m = dat.getMonth();
+  var gs = g, ms = m + 1; if(ms > 11){ ms = 0; gs++; }
+  if(dat >= ponedjeljakPromjene(gs, ms)) return gs * 12 + ms;
+  if(dat < ponedjeljakPromjene(g, m)){ m--; if(m < 0){ m = 11; g--; } }
+  return g * 12 + m;
+}
+function obrnuto(dat){
+  return (indeksPerioda(dat) - (REF.g * 12 + REF.m)) % 2 !== 0;
+}
+function razrediSmjene(k, dat){
+  return (obrnuto(dat) ? RAZREDI_OBRNUTO : RAZREDI)[k] || "";
+}
+function sljedecaPromjena(dat){
+  var g = dat.getFullYear(), m = dat.getMonth(), p = ponedjeljakPromjene(g, m + 1 > 11 ? 0 : m + 1);
+  if(m + 1 > 11) p = ponedjeljakPromjene(g + 1, 0);
+  if(p <= dat){ m += 2; g += Math.floor(m / 12); m = m % 12; p = ponedjeljakPromjene(g, m); }
+  return p;
+}
+
+/* ── stanje jedne smjene u datom trenutku ── */
+function stanjeSmjene(k, t){
+  var lista = termini(k), prvi = lista[0], zadnji = lista[lista.length - 1];
+  if(t < prvi.a) return {k:k, tip:"prije", zvono:prvi.a, cilj:prvi, lista:lista};
+  if(t >= zadnji.z) return {k:k, tip:"poslije", zvono:null, lista:lista};
+  for(var i = 0; i < lista.length; i++){
+    if(t >= lista[i].a && t < lista[i].z)
+      return {k:k, tip:"cas", cas:lista[i], zvono:lista[i].z, lista:lista};
+    if(i + 1 < lista.length && t >= lista[i].z && t < lista[i+1].a)
+      return {k:k, tip:"odmor", prethodni:lista[i], cilj:lista[i+1], zvono:lista[i+1].a,
+              veliki:(lista[i+1].a - lista[i].z) >= 15 * 60, lista:lista};
+  }
+  return {k:k, tip:"poslije", zvono:null, lista:lista};
+}
+
+/* ── crtanje ── */
+var zadnjaPoruka = -1, zadnjaMinuta = -1, zadnjiKljuc = "";
+
+function crtaj(){
+  var sad = new Date();
+  var t = sad.getHours() * 3600 + sad.getMinutes() * 60 + sad.getSeconds();
+  var dan = sad.getDay();
+  var radni = dan >= 1 && dan <= 5;
+  var neradan = NERADNI[kljucDatuma(sad)];
+
+  document.getElementById("sat").textContent = dva(sad.getHours()) + ":" + dva(sad.getMinutes());
+  document.getElementById("sek").textContent = dva(sad.getSeconds());
+  document.getElementById("datum").textContent =
+    DANI[dan] + ", " + sad.getDate() + ". " + MJESECI[sad.getMonth()] + " " + sad.getFullYear() + ".";
+
+  var sadaEl = document.getElementById("sada");
+  var oznaka = document.getElementById("oznaka");
+  var naslov = document.getElementById("naslov");
+  var brojka = document.getElementById("brojka");
+  var dozvona = document.getElementById("dozvona");
+  var zatim = document.getElementById("zatim");
+  var paralela = document.getElementById("paralela");
+
+  /* ── koja smjena vodi ── */
+  var stanja = ["I","M","II"].map(function(k){ return stanjeSmjene(k, t); });
+  var zive = stanja.filter(function(s){ return s.tip !== "poslije"; });
+  /* kad dvije smjene zvone u isto vrijeme, prednost ima starija smjena */
+  var tez = {I:0, II:0, M:1};
+  zive.sort(function(a, b){ return (a.zvono - b.zvono) || (tez[a.k] - tez[b.k]); });
+  var glavno = zive.length ? zive[0] : null;
+
+  sadaEl.className = "sada";
+
+  if(!radni || neradan){
+    sadaEl.className = "sada mir";
+    oznaka.textContent = neradan ? "Neradan dan" : "Vikend";
+    naslov.textContent = neradan ? neradan : "Nema nastave";
+    brojka.textContent = dva(sad.getHours()) + ":" + dva(sad.getMinutes());
+    dozvona.textContent = "";
+    zatim.textContent = "Vidimo se u " + (dan === 6 ? "ponedjeljak" : dan === 0 ? "ponedjeljak" : "prvi radni dan") + ".";
+    paralela.innerHTML = "";
+  } else if(!glavno){
+    sadaEl.className = "sada mir";
+    oznaka.textContent = "Kraj nastave";
+    naslov.textContent = "Nastava je završena";
+    brojka.textContent = dva(sad.getHours()) + ":" + dva(sad.getMinutes());
+    dozvona.textContent = "";
+    zatim.innerHTML = "Sutra prvo zvono u <b>" + ZVONA.I.poc + "</b>.";
+    paralela.innerHTML = "";
+  } else {
+    var z = ZVONA[glavno.k];
+    var raz = razrediSmjene(glavno.k, sad);
+
+    if(glavno.tip === "cas"){
+      oznaka.textContent = z.ime + " · " + raz;
+      naslov.textContent = glavno.cas.br + ". čas";
+      brojka.textContent = odbroj(glavno.zvono - t);
+      dozvona.textContent = "do kraja časa · " + uSat(glavno.cas.a) + "–" + uSat(glavno.cas.z);
+      var sl = glavno.lista[glavno.cas.br] || null;
+      zatim.innerHTML = sl
+        ? "Zatim odmor do <b>" + uSat(sl.a) + "</b>, pa " + sl.br + ". čas."
+        : "Ovo je posljednji čas u smjeni.";
+    } else if(glavno.tip === "odmor"){
+      sadaEl.className = "sada odmor";
+      oznaka.textContent = z.ime + " · " + raz;
+      naslov.textContent = glavno.veliki ? "Veliki odmor" : "Odmor";
+      brojka.textContent = odbroj(glavno.zvono - t);
+      dozvona.textContent = "do " + glavno.cilj.br + ". časa · počinje u " + uSat(glavno.cilj.a);
+      zatim.innerHTML = "Odmor traje do <b>" + uSat(glavno.cilj.a) + "</b>.";
+    } else {
+      oznaka.textContent = z.ime + " · " + raz;
+      naslov.textContent = "Nastava uskoro";
+      brojka.textContent = odbroj(glavno.zvono - t);
+      dozvona.textContent = "do prvog časa · počinje u " + uSat(glavno.cilj.a);
+      zatim.innerHTML = "Prvo zvono u <b>" + uSat(glavno.cilj.a) + "</b>.";
+    }
+
+    /* ostale smjene koje su u toku */
+    paralela.innerHTML = zive.slice(1).map(function(s){
+      var zz = ZVONA[s.k], opis;
+      if(s.tip === "cas") opis = s.cas.br + ". čas do " + uSat(s.cas.z);
+      else if(s.tip === "odmor") opis = "odmor do " + uSat(s.cilj.a);
+      else opis = "počinje u " + uSat(s.cilj.a);
+      return "<span><b>" + zz.ime + "</b> · " + opis + "</span>";
+    }).join("");
+  }
+
+  /* ── raspored zvona za vodeću smjenu ── */
+  var prikaz = glavno || stanjeSmjene("I", t);
+  var kljuc = prikaz.k + "|" + (radni && !neradan);
+  var zl = document.getElementById("zvonaLista");
+  if(kljuc !== zadnjiKljuc || sad.getMinutes() !== zadnjaMinuta){
+    zadnjiKljuc = kljuc; zadnjaMinuta = sad.getMinutes();
+    document.getElementById("zvonaSmjena").textContent =
+      ZVONA[prikaz.k].ime + " · " + razrediSmjene(prikaz.k, sad);
+    var zh = "";
+    prikaz.lista.forEach(function(c, i){
+      var sada = radni && !neradan && t >= c.a && t < c.z;
+      var proslo = radni && !neradan && t >= c.z;
+      zh += '<li class="' + (sada ? "sad" : proslo ? "proslo" : "") + '">' +
+            "<em>" + c.br + ".</em><b>" + uSat(c.a) + "–" + uSat(c.z) + "</b></li>";
+      var sl = prikaz.lista[i+1];
+      if(sl && (sl.a - c.z) >= 15 * 60)
+        zh += '<li class="veliki ' + (radni && !neradan && t >= c.z && t < sl.a ? "sad" : t >= sl.a ? "proslo" : "") + '">' +
+              "<em></em><b>" + uSat(c.z) + "–" + uSat(sl.a) + " veliki odmor</b></li>";
+    });
+    zl.innerHTML = zh;
+    uklopi(zl, "--zv");
+
+    /* ── dežurni ── */
+    crtajDezurne(prikaz.k, dan, radni && !neradan);
+  }
+
+  /* ── podnožje ── */
+  var p = sljedecaPromjena(sad);
+  var dana = Math.ceil((p - sad) / 86400000);
+  document.getElementById("promjenaSmjene").innerHTML =
+    "Smjene se mijenjaju <b>" + p.getDate() + "." + (p.getMonth()+1) + ".</b>" +
+    (dana <= 14 ? " · za " + dana + (dana === 1 ? " dan" : " dana") : "");
+
+  if(PORUKE.length){
+    var idx = Math.floor(Date.now() / 12000) % PORUKE.length;
+    if(idx !== zadnjaPoruka){
+      zadnjaPoruka = idx;
+      var el = document.getElementById("poruka");
+      el.style.opacity = "0";
+      setTimeout(function(){ el.textContent = PORUKE[idx]; el.style.opacity = "1"; }, 350);
+    }
+  } else {
+    document.getElementById("poruka").textContent = "—";
+    document.getElementById("poruka").className = "tekst tiho";
+  }
+}
+
+function crtajDezurne(smjena, dan, radni){
+  var el = document.getElementById("dezurniSadrzaj");
+  document.getElementById("dezurniDan").textContent = radni ? DANI[dan] : "";
+  if(!radni){ el.innerHTML = '<div class="nema">Nema nastave.</div>'; return; }
+
+  var grupe = DEZURSTVO.filter(function(g){ return g.smjena === smjena; });
+  if(!grupe.length){ el.innerHTML = '<div class="nema">Nije upisano dežurstvo.</div>'; return; }
+
+  var h = "<table>";
+  grupe.forEach(function(g, gi){
+    if(grupe.length > 1)
+      h += '<tr><td colspan="2" class="grupa"' + (gi === 0 ? ' style="padding-top:.2rem"' : '') + ">" +
+           g.grupa + "</td></tr>";
+    Object.keys(g.mjesta).forEach(function(m){
+      var ko = g.mjesta[m][dan - 1] || "—";
+      h += "<tr><td>" + m.trim() + "</td><td>" + ko + "</td></tr>";
+    });
+  });
+  el.innerHTML = h + "</table>";
+  uklopi(el, "--dez");
+}
+
+/* smanjuje tekst dok ne stane u svoj okvir — koliko god redova bilo */
+function uklopi(el, ime){
+  var v = 1.0;
+  el.style.setProperty(ime, v + "rem");
+  for(var i = 0; i < 30 && el.scrollHeight > el.clientHeight + 1; i++){
+    v -= 0.03;
+    el.style.setProperty(ime, v.toFixed(2) + "rem");
+  }
+}
+
+/* ── logo ── */
+(function(){
+  var img = new Image();
+  img.onload = function(){
+    var g = document.getElementById("grb");
+    var nov = document.createElement("img");
+    nov.src = "logo.png";
+    nov.alt = "";
+    g.parentNode.replaceChild(nov, g);
+  };
+  img.src = "logo.png";
+  if(TEMA === "tamna") document.documentElement.setAttribute("data-tema", "tamna");
+  document.getElementById("imeSkole").textContent = SKOLA;
+  document.getElementById("mjesto").textContent = MJESTO;
+  document.title = "Hodnik — " + SKOLA;
+  document.getElementById("poruka").style.transition = "opacity .35s";
+})();
+
+/* ── protiv utiskivanja slike: ekran se neprimjetno pomjera ── */
+setInterval(function(){
+  var x = (Math.random() * 10 - 5).toFixed(1), y = (Math.random() * 8 - 4).toFixed(1);
+  document.getElementById("ekran").style.transform = "translate(" + x + "px," + y + "px)";
+}, 40000);
+
+/* ── osvježi stranicu jednom dnevno, u 3 ujutru ── */
+setInterval(function(){
+  var d = new Date();
+  if(d.getHours() === 3 && d.getMinutes() === 0 && d.getSeconds() < 2) location.reload();
+}, 1000);
+
+crtaj();
+setInterval(crtaj, 1000);
+</script>
+</body>
+</html>
