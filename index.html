@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Moj raspored časova</title>
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#27463A">
+<meta name="theme-color" content="#0E1721">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -15,42 +15,42 @@
 <link rel="manifest" href="manifest.json">
 <style>
 :root{
-  /* papir i kreda */
-  --papir:#F1F3EE; --list:#FFFFFF;
-  --ink:#1B2420; --ink-2:#4A5A52; --ink-3:#7F8D86; --ink-4:#AEB9B2;
-  --linija:#D7DDD6; --linija-2:#E9ECE7;
-  /* tabla */
-  --tabla:#27463A; --tabla-2:#1D3730; --kreda:#EDF2EC; --kreda-2:#A8C0B2;
+  /* podloga i papir */
+  --papir:#F2F4F7; --list:#FFFFFF;
+  --ink:#0E141A; --ink-2:#3A444E; --ink-3:#69757F; --ink-4:#A1ABB5;
+  --linija:#D4D9DF; --linija-2:#E6EAEE;
+  /* zaglavlje */
+  --tabla:#0E1721; --tabla-2:#070C12; --kreda:#EBF0F5; --kreda-2:#8C9BAA;
   /* stanja */
-  --cas:#2F6B52; --cas-bg:#E3EEE7; --cas-ivica:#BBD4C4;
-  --odmor:#A9601A; --odmor-bg:#F8EBDA; --odmor-ivica:#E6CBA4;
-  --stop:#99392C; --stop-bg:#F5E4E0; --stop-ivica:#DFBAB2;
+  --cas:#1A5CD0; --cas-bg:#E3EBFA; --cas-ivica:#B8CCF2;
+  --odmor:#92600F; --odmor-bg:#FAEFDA; --odmor-ivica:#EDD7A6;
+  --stop:#AF271E; --stop-bg:#FAE5E3; --stop-ivica:#EFBEB8;
   --na-akcentu:#FFFFFF;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  --r:6px;
+  --r:3px;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="svijetla"]){
-    --papir:#11150F; --list:#1A201A;
-    --ink:#E8EDE6; --ink-2:#B3C0B5; --ink-3:#86948A; --ink-4:#5E6B62;
-    --linija:#2C352D; --linija-2:#232B24;
-    --tabla:#1B2F28; --tabla-2:#15231E; --kreda:#E6EFE7; --kreda-2:#93AE9F;
-    --cas:#7CBE9A; --cas-bg:#1C2E25; --cas-ivica:#2F4A3B;
-    --odmor:#D59C53; --odmor-bg:#2E2517; --odmor-ivica:#4E3D22;
-    --stop:#DF8C7C; --stop-bg:#30201C; --stop-ivica:#4E322B;
-    --na-akcentu:#0F1511;
+    --papir:#0C1117; --list:#141B23;
+    --ink:#E5EBF1; --ink-2:#AEBBC7; --ink-3:#7B8A98; --ink-4:#55626E;
+    --linija:#252F38; --linija-2:#1B232B;
+    --tabla:#090F15; --tabla-2:#05090D; --kreda:#E5EBF1; --kreda-2:#8193A3;
+    --cas:#6FA6FF; --cas-bg:#14243A; --cas-ivica:#264061;
+    --odmor:#D7A04C; --odmor-bg:#292015; --odmor-ivica:#433320;
+    --stop:#E78A7F; --stop-bg:#2A1917; --stop-ivica:#462824;
+    --na-akcentu:#070E16;
   }
 }
 :root[data-theme="tamna"]{
-  --papir:#11150F; --list:#1A201A;
-  --ink:#E8EDE6; --ink-2:#B3C0B5; --ink-3:#86948A; --ink-4:#5E6B62;
-  --linija:#2C352D; --linija-2:#232B24;
-  --tabla:#1B2F28; --tabla-2:#15231E; --kreda:#E6EFE7; --kreda-2:#93AE9F;
-  --cas:#7CBE9A; --cas-bg:#1C2E25; --cas-ivica:#2F4A3B;
-  --odmor:#D59C53; --odmor-bg:#2E2517; --odmor-ivica:#4E3D22;
-  --stop:#DF8C7C; --stop-bg:#30201C; --stop-ivica:#4E322B;
-  --na-akcentu:#0F1511;
+  --papir:#0C1117; --list:#141B23;
+  --ink:#E5EBF1; --ink-2:#AEBBC7; --ink-3:#7B8A98; --ink-4:#55626E;
+  --linija:#252F38; --linija-2:#1B232B;
+  --tabla:#090F15; --tabla-2:#05090D; --kreda:#E5EBF1; --kreda-2:#8193A3;
+  --cas:#6FA6FF; --cas-bg:#14243A; --cas-ivica:#264061;
+  --odmor:#D7A04C; --odmor-bg:#292015; --odmor-ivica:#433320;
+  --stop:#E78A7F; --stop-bg:#2A1917; --stop-ivica:#462824;
+  --na-akcentu:#070E16;
 }
 
 *{box-sizing:border-box}
@@ -63,7 +63,7 @@ button{font-family:inherit}
 
 /* ---------- zaglavlje ---------- */
 header{background:var(--tabla);color:var(--kreda);padding:14px 0 13px;
-  border-bottom:3px solid var(--tabla-2)}
+  border-bottom:3px solid var(--cas)}
 header .wrap{padding-bottom:0;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
 h1{margin:0;font-size:18px;font-weight:650;letter-spacing:-.015em;flex:1 1 auto}
 h1 span{display:block;font-size:12.5px;font-weight:450;color:var(--kreda-2);margin-top:5px;letter-spacing:0;line-height:1.7}
@@ -373,6 +373,9 @@ details[open] summary::before{content:"–"}
   thead th.dnes,td.dnes{background:#fff!important;box-shadow:none}
 }
 .potpis{padding:4px 0 30px;text-align:center;line-height:1.7}
+.odjavaRed{display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:0 0 18px;margin-bottom:16px;border-bottom:1px solid var(--linija-2)}
+.odjavaRed span{font-size:13px;color:var(--ink-3)}
 .potpis #verzija{font-size:12px;color:var(--ink-4)}
 .potpis .autor{font-size:12px;color:var(--ink-3)}
 .potpis .autor a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--linija);font-weight:600}
@@ -396,7 +399,7 @@ details[open] summary::before{content:"–"}
   td.dnes{background:none}
   .cell{min-height:62px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;
     justify-content:center}
-  .cell.pun{background:var(--list);border:1px solid var(--linija);border-radius:9px;
+  .cell.pun{background:var(--list);border:1px solid var(--linija);border-radius:4px;
     margin:0;padding:10px 12px;box-shadow:0 1px 1px rgba(27,36,32,.03)}
   .cell.pun:hover{background:var(--list);border-color:var(--ink-4);box-shadow:0 2px 6px rgba(27,36,32,.07)}
   td.dnes .cell.pun{border-color:var(--cas-ivica)}
@@ -583,7 +586,6 @@ body.zakljucano>header,body.zakljucano>main,body.zakljucano>footer{display:none!
       <button class="btn" id="nLoz">Promijeni lozinku</button>
       <button class="btn" id="nZakljucaj">Zaključaj sada</button>
       <button class="btn" id="nOsvjezi" style="display:none">Vrati raspored sa spiska</button>
-      <button class="btn" id="nOdjava">Odjavi se</button>
     </div>
 
     <div class="ured"><button class="btn" id="mReset">Obriši sve i počni ispočetka</button></div>
@@ -634,6 +636,10 @@ body.zakljucano>header,body.zakljucano>main,body.zakljucano>footer{display:none!
 </main>
 
 <footer class="wrap potpis">
+  <div class="odjavaRed" id="odjavaRed" style="display:none">
+    <span id="odjavaKo"></span>
+    <button class="btn" id="nOdjava">Odjavi se</button>
+  </div>
   <div id="verzija"></div>
   <div class="autor">Napravio <a href="https://topcontrol.rs" target="_blank" rel="noopener">Top Control</a> · Novi Pazar</div>
 </footer>
@@ -3213,6 +3219,11 @@ function crtajNalog(){
   });
   var o = document.getElementById("nOsvjezi");
   if(o) o.style.display = nadjiNastavnika(NALOG.ime) ? "" : "none";
+  var red = document.getElementById("odjavaRed");
+  if(red){
+    red.style.display = "flex";
+    document.getElementById("odjavaKo").textContent = "Prijavljen kao " + NALOG.ime;
+  }
 }
 document.querySelectorAll("#nTrazi button").forEach(function(b){
   b.onclick = function(){
@@ -3462,7 +3473,7 @@ function crtajKop(){
 }
 
 /* ---------- dijeljenje ---------- */
-var VERZIJA = "3.2 · 17.11.2026.";
+var VERZIJA = "3.3 · 17.11.2026.";
 document.getElementById("verzija").textContent = "Raspored časova " + VERZIJA;
 
 (function(){
