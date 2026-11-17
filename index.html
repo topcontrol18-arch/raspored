@@ -80,8 +80,11 @@ h1 span{display:block;font-size:12.5px;font-weight:450;color:var(--kreda-2);marg
 /* ---------- tanki redovi umjesto ploče ---------- */
 #zivo:not(:empty){margin-top:16px;display:grid;gap:8px}
 .traka-red{background:var(--list);border:1px solid var(--linija);border-left:3px solid var(--ink-4);
-  border-radius:var(--r);padding:10px 13px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+  border-radius:var(--r);padding:11px 13px;font-size:13.5px;color:var(--ink-2);line-height:1.7}
 .traka-red b{color:var(--ink);font-weight:650}
+.odbr{display:inline-block;font-family:var(--mono);font-size:23px;font-weight:650;
+  color:var(--cas);font-variant-numeric:tabular-nums;letter-spacing:-.03em;
+  vertical-align:-3px;margin:0 2px;line-height:1}
 .traka-red.gradivo{border-left-color:var(--cas)}
 .traka-red .btn{padding:3px 9px;font-size:12px;margin-left:4px}
 .traka-red .oz{margin-left:2px}
@@ -175,8 +178,8 @@ h1 span{display:block;font-size:12.5px;font-weight:450;color:var(--kreda-2);marg
 .dcard li.kraj b{font-size:12.5px;font-weight:500;color:var(--ink-4);letter-spacing:.02em;text-transform:none}
 .dcard li.kraj i{color:var(--ink-4);font-size:12px}
 .dcard .nis{padding:4px 0 8px;color:var(--ink-4);font-size:14px}
-.ostalo{order:3;margin-left:auto;font-family:var(--mono);font-size:15px;font-weight:600;
-  color:var(--cas);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.ostalo{order:3;margin-left:auto;font-family:var(--mono);font-size:22px;font-weight:650;
+  color:var(--cas);font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1.1}
 .jed{order:4;flex:1 1 100%;margin-left:118px;font-size:12.5px;color:var(--ink-2);line-height:1.35}
 .tacka{color:var(--odmor)}
 
@@ -1434,11 +1437,11 @@ function crtajZivo(){
   var stanjeRed = "";
   if(s.tip === "cas")
     stanjeRed = "<b>" + s.cas.br + ". čas</b> · " + esc(s.cas.ime) + " · " + s.cas.od + "–" + s.cas["do"] +
-                " · zvoni za <b>" + odbroj(s.ostalo) + "</b>" +
+                " · zvoni za <span class=\"odbr\">" + odbroj(s.ostalo) + "</span>" +
                 (s.sljedeci ? " · zatim " + esc(s.sljedeci.ime) + " u " + s.sljedeci.od : " · poslije ovog si gotov");
   else if(s.tip === "odmor")
     stanjeRed = (s.prvi ? "Nastava počinje u " + s.cilj.od : "Odmor do " + s.cilj.od) +
-                " · <b>" + esc(s.cilj.ime) + "</b> za " + odbroj(s.ostalo);
+                " · <b>" + esc(s.cilj.ime) + "</b> za <span class=\"odbr\">" + odbroj(s.ostalo) + "</span>";
   else if(s.tip === "kraj")
     stanjeRed = "Gotovo za danas" + (s.dalje ? " · sljedeće " + (s.dalje.sutra ? "sutra" : s.dalje.dan.toLowerCase()) + " u " + s.dalje.lista[0].od : "");
   else if(s.tip === "neradan")
@@ -3504,7 +3507,7 @@ function crtajKop(){
 }
 
 /* ---------- dijeljenje ---------- */
-var VERZIJA = "3.5 · 17.11.2026.";
+var VERZIJA = "3.6 · 17.11.2026.";
 document.getElementById("verzija").textContent = "Raspored časova " + VERZIJA;
 
 (function(){
